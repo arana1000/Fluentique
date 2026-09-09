@@ -1,0 +1,136 @@
+<GrammarExerciseScreen>:
+    canvas.before:
+        Color:
+            rgba: 0.965, 0.969, 1, 1  # Light background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+
+        # Progress Bar
+        ProgressBar:
+            max: 10
+            value: root.sentence_progress + root.speech_progress
+            height: dp(10)
+            size_hint_y: None
+
+        # Girl image + encouragement
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(80)
+            spacing: dp(10)
+            Image:
+                source: 'assets/loading_girl.png'
+                size_hint_x: None
+                width: dp(60)
+            Label:
+                text: "You can do it!"
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: '16sp'
+                color: 0.3, 0.3, 0.3, 1
+                halign: 'left'
+                valign: 'middle'
+                text_size: self.size
+
+        # Line separator
+        BoxLayout:
+            size_hint_y: None
+            height: dp(1)
+            canvas.before:
+                Color:
+                    rgba: 0.5, 0.5, 0.5, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # Instruction text
+        Label:
+            text: "Tap the words in the correct order to form the French sentence"
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '16sp'
+            color: 0.3, 0.3, 0.3, 1
+            size_hint_y: None
+            height: dp(40)
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+
+        # Line separator
+        BoxLayout:
+            size_hint_y: None
+            height: dp(1)
+            canvas.before:
+                Color:
+                    rgba: 0.5, 0.5, 0.5, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # English sentence (bold)
+        Label:
+            id: prompt_label
+            text: "She washes her hands."
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '18sp'
+            color: 0, 0, 0, 1
+            size_hint_y: None
+            height: dp(50)
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+
+        # Constructed sentence (with rounded box)
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            canvas.before:
+                Color:
+                    rgba: 0.93, 0.92, 0.97, 1  # Soft purple
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [10]
+            Label:
+                id: constructed_sentence
+                text: ""
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: '16sp'
+                color: 0, 0, 0, 1
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Word tiles
+        GridLayout:
+            id: word_tiles
+            cols: 4
+            spacing: dp(10)
+            padding: dp(10)
+            size_hint_y: None
+            height: self.minimum_height
+
+        # Submit button
+        Button:
+            id: submit
+            text: "SUBMIT"
+            font_name: "assets/ProximaSoft-Bold"
+            size_hint_y: None
+            height: dp(50)
+            background_color: 0.8, 0.78, 0.9, 1  # Light purple
+            on_release: root.submit_translation()
+            disabled: True
+
+        # Progress text
+        Label:
+            text: "Sentences: {}/5 | Speech: {}/5".format(root.sentence_progress, root.speech_progress)
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '14sp'
+            color: 0.3, 0.3, 0.3, 1
+            size_hint_y: None
+            height: dp(20)

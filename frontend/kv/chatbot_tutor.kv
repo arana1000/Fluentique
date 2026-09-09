@@ -1,0 +1,111 @@
+<ChatbotTutorScreen>:
+    on_enter: root.on_enter()
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1  # White background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 10
+
+        FloatLayout:
+            size_hint_y: None
+            height: "160dp"
+
+            canvas.before:
+                Color:
+                    rgba: 0.5, 0.7, 1, 0.2  # Light blue glow
+                Ellipse:
+                    size: self.width * 0.4, self.height * 0.7
+                    pos: self.center_x - self.width * 0.2, self.center_y - self.height * 0.35
+
+            Image:
+                id: avatar
+                source: "assets/avatar_idle.png"
+                size_hint: None, None
+                size: "130dp", "130dp"
+                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                allow_stretch: True
+                keep_ratio: True
+
+        # Transcripts (AI + User)
+        ScrollView:
+            id: scroll
+            do_scroll_x: False
+
+            GridLayout:
+                id: chat_box
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 10
+                padding: 10
+
+        # Mic toggle or typing input
+        BoxLayout:
+            id: input_toggle
+            size_hint_y: None
+            height: "50dp"
+            spacing: 10
+
+            Button:
+                id: mic_button
+                size_hint: None, None
+                size: "52dp", "52dp"
+                background_normal: ""
+                background_down: ""
+                background_color: 0, 0, 0, 0
+                on_release: root.toggle_input_mode()
+
+                Image:
+                    source: "assets/mic_input.png"
+                    size_hint: None, None
+                    size: "40dp", "40dp"
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    allow_stretch: True
+                    keep_ratio: True
+
+            Label:
+                id: recording_label
+                text: ""
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: "16sp"
+                color: 0, 0, 0, 1
+                size_hint_y: None
+                height: "25dp"
+
+
+            TextInput:
+                id: input_box
+                hint_text: "Type your message in French.."
+                multiline: False
+                on_text_validate: root.send_message()
+                font_name: "assets/ProximaSoft-Regular"
+
+            Button:
+                text: "Send"
+                size_hint_x: None
+                width: "100dp"
+                background_normal: ""
+                background_down: ""
+                background_color: 0.0, 0.6, 1, 1  # Bright Fluentique blue
+                color: 1, 1, 1, 1
+                font_name: "assets/ProximaSoft-Regular"
+                on_release: root.send_message()
+            
+        BoxLayout:
+            size_hint_y: None
+            height: "45dp"
+            padding: 0, 5
+            Button:
+                text: "End Session"
+                size_hint: 1, None
+                height: "40dp"
+                background_color: 1, 0.4, 0.4, 1  # Soft red
+                color: 1, 1, 1, 1
+                font_name: "assets/ProximaSoft-Regular"
+                on_release: root.end_chat_session()

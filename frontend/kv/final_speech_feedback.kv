@@ -1,0 +1,53 @@
+<FinalSpeechFeedbackScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "🎤 Speech Practice Completed!"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '22sp'
+            color: 0, 0, 0, 1
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: None
+            height: dp(60)
+            text_size: self.width, None
+
+        Label:
+            text: "Well done on completing the exercises."
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '16sp'
+            color: 0, 0, 0, 1
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: None
+            height: dp(40)
+            text_size: self.width, None
+
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                id: feedback_box
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+                padding: dp(10)
+
+        Button:
+            text: "View Results"
+            font_name: "assets/ProximaSoft-Bold"
+            background_normal: ''
+            background_color: 55/255, 71/255, 79/255, 1
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.go_to_results()

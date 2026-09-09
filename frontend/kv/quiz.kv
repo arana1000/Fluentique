@@ -1,0 +1,139 @@
+<QuizScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        ProgressBar:
+            id: progress_bar
+            max: 25  # Total questions including challenge round
+            value: root.total_progress
+            height: dp(10)
+            size_hint_y: None
+            background_color: 0.9, 0.9, 0.9, 1  # Grey track
+            canvas.before:
+                Color:
+                    rgba: 0.9, 0.9, 0.9, 1  # Background bar
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            canvas.after:
+                Color:
+                    rgba: 0.4, 0.7, 1, 1  # Progress blue
+                Rectangle:
+                    pos: self.pos
+                    size: (self.width * (self.value / self.max), self.height)
+
+
+        # Speaker icon
+        BoxLayout:
+            size_hint_y: None
+            height: dp(100)
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                Button:
+                    background_normal: 'assets/speaker.png'
+                    background_down: 'assets/speaker.png'
+                    size_hint: None, None
+                    size: dp(60), dp(60)
+                    on_release: root.replay_word()
+
+        BoxLayout:
+            id: definition_box
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(80)
+            padding: dp(10)
+
+        
+        # Answer options
+        GridLayout:
+            cols: 2
+            spacing: dp(15)
+            size_hint_y: None
+            height: dp(250)  # Adjust based on your spacing
+
+            Button:
+                id: option1
+                text: ""
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+                border: (0, 0, 0, 0)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1  # Light grey border
+                    Line:
+                        width: 1.2
+                        rounded_rectangle: (self.x, self.y, self.width, self.height, dp(10))
+                color: 0, 0, 0, 1  # Black text
+                on_release: root.select_option(1)
+
+            Button:
+                id: option2
+                text: ""
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+                border: (0, 0, 0, 0)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1  # Light grey border
+                    Line:
+                        width: 1.2
+                        rounded_rectangle: (self.x, self.y, self.width, self.height, dp(10))
+                color: 0, 0, 0, 1  # Black text
+                on_release: root.select_option(2)
+
+            Button:
+                id: option3
+                text: ""
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+                border: (0, 0, 0, 0)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1  # Light grey border
+                    Line:
+                        width: 1.2
+                        rounded_rectangle: (self.x, self.y, self.width, self.height, dp(10))
+                color: 0, 0, 0, 1  # Black text
+                on_release: root.select_option(3)
+
+            Button:
+                id: option4
+                text: ""
+                background_normal: ''
+                background_color: 1, 1, 1, 1
+                border: (0, 0, 0, 0)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1  # Light grey border
+                    Line:
+                        width: 1.2
+                        rounded_rectangle: (self.x, self.y, self.width, self.height, dp(10))
+                color: 0, 0, 0, 1  # Black text
+                on_release: root.select_option(4)
+
+        # Submit/Check button
+        BoxLayout:
+            size_hint_y: None
+            height: dp(70)
+            padding: dp(10)
+            Button:
+                id: submit_button
+                text: "CHECK"
+                font_name: "assets/ProximaSoft-Bold"
+                background_normal: ''
+                background_color: 1, 0.773, 0.753, 1
+                color: 1, 0, 0, 1
+                on_release: root.submit_answer()
+
+        # Feedback bar
+        BoxLayout:
+            id: feedback_bar
+            size_hint_y: None
+            height: 0

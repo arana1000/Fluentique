@@ -1,0 +1,56 @@
+<SentenceResultScreen>:
+    bg_color: 0.965, 0.969, 1, 1  # Default light background
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+        canvas.before:
+            Color:
+                rgba: root.bg_color
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Result label (Correct/Incorrect)
+        Label:
+            id: result_label
+            text: ""
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '24sp'
+            color: 0, 0.6, 0, 1  # Default green (can change dynamically)
+            size_hint_y: None
+            height: dp(60)
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+
+        # Correct sentence shown
+        Label:
+            id: correct_sentence_label
+            text: ""
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '18sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+            
+        Label:
+            id: user_sentence_label
+            text: ""
+            font_name: "assets/ProximaSoft-Regular"
+            color: 0.3, 0.3, 0.3, 1
+            font_size: '16sp'
+            size_hint_y: None
+            height: self.texture_size[1] + dp(10)
+
+
+        # Continue button
+        Button:
+            text: "Continue to Speak"
+            font_name: "assets/ProximaSoft-Bold"
+            size_hint_y: None
+            height: dp(50)
+            background_color: 0.4, 0.4, 0.4, 1
+            color: 1, 1, 1, 1
+            on_release: root.continue_to_speech()

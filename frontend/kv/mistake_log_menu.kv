@@ -1,0 +1,89 @@
+<MistakeLogMenuScreen>:
+    name: "mistake_log_menu"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(25)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Your Progress Logs"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "22sp"
+            size_hint_y: None
+            height: dp(50)
+            color: 0.15, 0.15, 0.15, 1
+
+        ScrollView:
+            do_scroll_x: False
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(15)
+
+                Button:
+                    text: "Quiz Mistakes"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(55)
+                    background_color: 0.4, 0.4, 0.4, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.manager.current = "quiz_mistakes_logs"
+
+                Button:
+                    text: "Quiz Scores"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(55)
+                    background_color: 0.4, 0.4, 0.4, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.manager.current = "quiz_scores_logs"
+
+                Button:
+                    text: "Sentence Puzzle Results"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(55)
+                    background_color: 0.4, 0.4, 0.4, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.manager.current = "sentence_results_logs"
+
+                Button:
+                    text: "Speech Feedback"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(55)
+                    background_color: 0.4, 0.4, 0.4, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.manager.current = "speech_feedback_logs"
+
+                Button:
+                    text: "AI Chat Transcripts"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(55)
+                    background_color: 0.4, 0.4, 0.4, 1
+                    color: 1, 1, 1, 1
+                    on_release: root.manager.current = "chat_transcripts_logs"
+
+                Button:
+                    text: "← Back to Profile"
+                    font_name: "assets/ProximaSoft-Bold"
+                    font_size: "16sp"
+                    size_hint_y: None
+                    height: dp(50)
+                    background_color: 0.7, 0.7, 0.7, 1
+                    color: 0.1, 0.1, 0.1, 1
+                    on_release: root.manager.current = "profile"

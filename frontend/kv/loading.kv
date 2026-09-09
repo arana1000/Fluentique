@@ -1,0 +1,41 @@
+<LoadingScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20), dp(40)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # F6F7FF
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Widget:
+
+        Image:
+            source: 'assets/loading_girl.png'
+            size_hint: None, None
+            size: dp(150), dp(150)
+            pos_hint: {'center_x': 0.5}
+
+        Label:
+            text: "LOADING...."
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            font_size: '20sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Label:
+            text: '"Building your vocabulary one word at a time."\nLearning a new language is like exploring a new world.'
+            font_name: "assets/ProximaSoft-Regular.ttf"
+            font_size: '12sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.width - dp(40), None
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Widget:

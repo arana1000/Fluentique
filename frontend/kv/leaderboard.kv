@@ -1,0 +1,90 @@
+<LeaderboardScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        FloatLayout:
+            size_hint_y: None
+            height: dp(100)
+
+            Image:
+                source: "assets/logo.png"
+                size_hint: None, None
+                size: dp(80), dp(80)
+                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(40)
+            padding: [dp(10), 0]
+            spacing: dp(5)
+
+            Label:
+                text: "Updated Leaderboard"
+                font_name: "assets/ProximaSoft-Bold"
+                font_size: '20sp'
+                color: 0.64, 0.53, 0.89, 1
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                size_hint_x: 0.85
+
+            Button:
+                background_normal: ""
+                background_color: (0, 0, 0, 0)
+                size_hint: None, None
+                size: dp(30), dp(30)
+                on_release: root.refresh_leaderboard()
+
+                Image:
+                    source: "assets/refresh_icon.png"
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: dp(24), dp(24)
+
+        # Leaderboard Container with Background
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 1
+            spacing: dp(8)
+            padding: [dp(10), dp(10), dp(10), dp(10)]
+
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [20]
+
+            ScrollView:
+                do_scroll_x: False
+
+                BoxLayout:
+                    id: leaderboard_box
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(8)
+
+
+
+        Button:
+            text: "BACK TO HOME"
+            font_name: "assets/ProximaSoft-Bold"
+            background_color: (1, 0.8, 0.8, 1)
+            color: (1, 0, 0, 1)
+            size_hint_y: None
+            height: dp(50)
+            background_normal: ""
+            background_down: ""
+            on_release: app.root.current = 'home_incomplete'

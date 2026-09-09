@@ -1,0 +1,73 @@
+<SummaryScreen>:
+    name: "summary_screen"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(24)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: (1, 1, 1, 1)  # white background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            padding: dp(20)
+            spacing: dp(12)
+            canvas.before:
+                Color:
+                    rgba: (0.95, 0.95, 0.97, 1)  # soft light grey
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [20]
+
+            Label:
+                text: "📋 Session Summary"
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: "22sp"
+                bold: True
+                halign: "center"
+                size_hint_y: None
+                height: self.texture_size[1]
+
+            ScrollView:
+                do_scroll_x: False
+                GridLayout:
+                    cols: 1
+                    size_hint_y: None
+                    padding: dp(10), dp(5)
+                    height: self.minimum_height
+                    Label:
+                        id: summary_label
+                        text: ""
+                        font_size: "16sp"
+                        font_name: "assets/ProximaSoft-Regular"
+                        color: (0.15, 0.15, 0.15, 1)
+                        text_size: self.width, None
+                        halign: "left"
+                        valign: "top"
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+        Button:
+            text: "Return Home"
+            size_hint_y: None
+            height: dp(50)
+            background_color: 0, 0.45, 0.85, 1  # Fluentique blue
+            color: 1, 1, 1, 1
+            font_name: "assets/ProximaSoft-Regular"
+            background_normal: ""
+            background_down: ""
+            canvas.before:
+                Color:
+                    rgba: self.background_color
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [12]
+            on_release:
+                root.return_home()

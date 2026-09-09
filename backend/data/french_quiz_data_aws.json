@@ -1,0 +1,2532 @@
+[
+  {
+    "level": "easy",
+    "correct": "voir",
+    "options": [
+      "mauvais",
+      "voir",
+      "matin",
+      "fermer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "lire",
+    "options": [
+      "venir",
+      "lire",
+      "sourire",
+      "trouver"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "commencer",
+    "options": [
+      "parler",
+      "cuisiner",
+      "vivre",
+      "commencer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "manger",
+    "options": [
+      "fermer",
+      "détester",
+      "vouloir",
+      "manger"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "vivre",
+    "options": [
+      "aller",
+      "vivre",
+      "nettoyer",
+      "bonjour"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "voiture",
+    "options": [
+      "vivre",
+      "voiture",
+      "pomme",
+      "vouloir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "dormir",
+    "options": [
+      "dormir",
+      "merci",
+      "huit",
+      "rester"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "mourir",
+    "options": [
+      "pouvoir",
+      "non",
+      "étudier",
+      "mourir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "conduire",
+    "options": [
+      "acheter",
+      "conduire",
+      "blanc",
+      "neuf"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "eau",
+    "options": [
+      "sortir",
+      "blanc",
+      "eau",
+      "penser"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "oui",
+    "options": [
+      "tomber",
+      "oui",
+      "manger",
+      "pleurer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "détester",
+    "options": [
+      "danser",
+      "bleu",
+      "détester",
+      "pleurer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "pain",
+    "options": [
+      "voir",
+      "pain",
+      "six",
+      "mauvais"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "trouver",
+    "options": [
+      "trouver",
+      "répondre",
+      "deux",
+      "comprendre"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "neuf",
+    "options": [
+      "chercher",
+      "neuf",
+      "bonjour",
+      "pomme"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "vert",
+    "options": [
+      "étudier",
+      "détester",
+      "vert",
+      "acheter"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "rire",
+    "options": [
+      "noir",
+      "rester",
+      "rire",
+      "famille"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "huit",
+    "options": [
+      "venir",
+      "finir",
+      "donner",
+      "huit"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "noir",
+    "options": [
+      "trouver",
+      "noir",
+      "vivre",
+      "vouloir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "boire",
+    "options": [
+      "dix",
+      "manger",
+      "mourir",
+      "boire"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "blanc",
+    "options": [
+      "rouge",
+      "blanc",
+      "chercher",
+      "aimer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "devoir",
+    "options": [
+      "matin",
+      "nettoyer",
+      "devoir",
+      "école"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "livre",
+    "options": [
+      "noir",
+      "livre",
+      "neuf",
+      "petit"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "perdre",
+    "options": [
+      "chercher",
+      "jour",
+      "perdre",
+      "sentir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "ouvrir",
+    "options": [
+      "ouvrir",
+      "soir",
+      "finir",
+      "dix"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "parler",
+    "options": [
+      "grand",
+      "petit",
+      "parler",
+      "chercher"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "école",
+    "options": [
+      "chat",
+      "merci",
+      "école",
+      "un"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "voler",
+    "options": [
+      "parler",
+      "amie",
+      "entrer",
+      "voler"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "recevoir",
+    "options": [
+      "recevoir",
+      "oui",
+      "école",
+      "écrire"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "bleu",
+    "options": [
+      "offrir",
+      "nuit",
+      "bleu",
+      "mourir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "un",
+    "options": [
+      "dix",
+      "famille",
+      "un",
+      "détester"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "tomber",
+    "options": [
+      "café",
+      "penser",
+      "tomber",
+      "fermer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "entrer",
+    "options": [
+      "danser",
+      "bleu",
+      "entrer",
+      "neuf"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "demander",
+    "options": [
+      "sortir",
+      "demander",
+      "nuit",
+      "écouter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "travailler",
+    "options": [
+      "travailler",
+      "mauvais",
+      "merci",
+      "étudier"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "dix",
+    "options": [
+      "demander",
+      "nettoyer",
+      "descendre",
+      "dix"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "sortir",
+    "options": [
+      "voler",
+      "eau",
+      "sortir",
+      "penser"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "sauter",
+    "options": [
+      "fermer",
+      "penser",
+      "cinq",
+      "sauter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "cuisiner",
+    "options": [
+      "écrire",
+      "cuisiner",
+      "bon",
+      "sauter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "merci",
+    "options": [
+      "sept",
+      "demander",
+      "apprendre",
+      "merci"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "matin",
+    "options": [
+      "cinq",
+      "vivre",
+      "blanc",
+      "matin"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "chanter",
+    "options": [
+      "chanter",
+      "eau",
+      "écrire",
+      "danser"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "cinq",
+    "options": [
+      "parler",
+      "devoir",
+      "cinq",
+      "voiture"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "comprendre",
+    "options": [
+      "lire",
+      "comprendre",
+      "ami",
+      "écrire"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "jour",
+    "options": [
+      "écouter",
+      "pouvoir",
+      "jour",
+      "vouloir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "bon",
+    "options": [
+      "sortir",
+      "fermer",
+      "bon",
+      "aimer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "jouer",
+    "options": [
+      "jouer",
+      "noir",
+      "cinq",
+      "neuf"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "descendre",
+    "options": [
+      "descendre",
+      "vendre",
+      "conduire",
+      "chat"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "vouloir",
+    "options": [
+      "pain",
+      "six",
+      "vouloir",
+      "bon"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "gagner",
+    "options": [
+      "gagner",
+      "jouer",
+      "merci",
+      "vivre"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "répondre",
+    "options": [
+      "rouge",
+      "étudier",
+      "tomber",
+      "répondre"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "offrir",
+    "options": [
+      "six",
+      "manger",
+      "offrir",
+      "voler"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "apprendre",
+    "options": [
+      "apprendre",
+      "demander",
+      "vivre",
+      "aimer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "acheter",
+    "options": [
+      "acheter",
+      "cuisiner",
+      "bleu",
+      "savoir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "vendre",
+    "options": [
+      "parler",
+      "vendre",
+      "savoir",
+      "aller"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "marcher",
+    "options": [
+      "merci",
+      "oui",
+      "sept",
+      "marcher"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "aimer",
+    "options": [
+      "aimer",
+      "courir",
+      "sept",
+      "nager"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "chercher",
+    "options": [
+      "cuisiner",
+      "vouloir",
+      "chercher",
+      "détester"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "café",
+    "options": [
+      "eau",
+      "étudier",
+      "grand",
+      "café"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "trois",
+    "options": [
+      "manger",
+      "trois",
+      "finir",
+      "chercher"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "ami",
+    "options": [
+      "ami",
+      "écrire",
+      "détester",
+      "soir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "savoir",
+    "options": [
+      "écouter",
+      "cinq",
+      "dormir",
+      "savoir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "venir",
+    "options": [
+      "sortir",
+      "venir",
+      "sept",
+      "écouter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "maison",
+    "options": [
+      "vert",
+      "café",
+      "maison",
+      "aimer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "sept",
+    "options": [
+      "bonjour",
+      "soir",
+      "jour",
+      "sept"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "donner",
+    "options": [
+      "acheter",
+      "pleurer",
+      "entrer",
+      "donner"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "étudier",
+    "options": [
+      "lire",
+      "café",
+      "étudier",
+      "chanter"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "écrire",
+    "options": [
+      "blanc",
+      "écrire",
+      "dix",
+      "trouver"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "rouge",
+    "options": [
+      "répondre",
+      "rouge",
+      "acheter",
+      "voir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "nager",
+    "options": [
+      "danser",
+      "nager",
+      "non",
+      "merci"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "rester",
+    "options": [
+      "cuisiner",
+      "rester",
+      "chanter",
+      "bonjour"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "penser",
+    "options": [
+      "penser",
+      "conduire",
+      "voir",
+      "recevoir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "mauvais",
+    "options": [
+      "travailler",
+      "nettoyer",
+      "mauvais",
+      "voiture"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "nettoyer",
+    "options": [
+      "nettoyer",
+      "apprendre",
+      "voiture",
+      "petit"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "regarder",
+    "options": [
+      "cinq",
+      "regarder",
+      "eau",
+      "sept"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "sentir",
+    "options": [
+      "parler",
+      "sentir",
+      "six",
+      "nuit"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "sourire",
+    "options": [
+      "offrir",
+      "sourire",
+      "vouloir",
+      "eau"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "finir",
+    "options": [
+      "merci",
+      "huit",
+      "sourire",
+      "finir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "non",
+    "options": [
+      "grand",
+      "non",
+      "boire",
+      "oui"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "quatre",
+    "options": [
+      "tomber",
+      "quatre",
+      "entrer",
+      "demander"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "petit",
+    "options": [
+      "petit",
+      "grand",
+      "cuisiner",
+      "courir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "soir",
+    "options": [
+      "gagner",
+      "soir",
+      "bonjour",
+      "fermer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "deux",
+    "options": [
+      "deux",
+      "vouloir",
+      "chien",
+      "sortir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "chat",
+    "options": [
+      "regarder",
+      "école",
+      "chat",
+      "bonjour"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "pomme",
+    "options": [
+      "recevoir",
+      "livre",
+      "pomme",
+      "parler"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "courir",
+    "options": [
+      "gagner",
+      "vouloir",
+      "aller",
+      "courir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "chien",
+    "options": [
+      "tomber",
+      "maison",
+      "blanc",
+      "chien"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "amie",
+    "options": [
+      "amie",
+      "famille",
+      "eau",
+      "mauvais"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "pouvoir",
+    "options": [
+      "aimer",
+      "non",
+      "nettoyer",
+      "pouvoir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "six",
+    "options": [
+      "cuisiner",
+      "bonjour",
+      "six",
+      "eau"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "easy",
+    "correct": "nuit",
+    "options": [
+      "sept",
+      "rire",
+      "grand",
+      "nuit"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "danser",
+    "options": [
+      "écrire",
+      "danser",
+      "soir",
+      "trouver"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "aller",
+    "options": [
+      "chat",
+      "aller",
+      "étudier",
+      "écouter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "easy",
+    "correct": "monter",
+    "options": [
+      "eau",
+      "bleu",
+      "comprendre",
+      "monter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "pleurer",
+    "options": [
+      "sauter",
+      "voler",
+      "chat",
+      "pleurer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "écouter",
+    "options": [
+      "devoir",
+      "non",
+      "aimer",
+      "écouter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "fermer",
+    "options": [
+      "fermer",
+      "entrer",
+      "dix",
+      "ami"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "grand",
+    "options": [
+      "grand",
+      "aimer",
+      "apprendre",
+      "demander"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "easy",
+    "correct": "famille",
+    "options": [
+      "chercher",
+      "conduire",
+      "neuf",
+      "famille"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "easy",
+    "correct": "bonjour",
+    "options": [
+      "merci",
+      "courir",
+      "boire",
+      "bonjour"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "créer",
+    "options": [
+      "diminuer",
+      "créer",
+      "choisir",
+      "exporter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "paraître",
+    "options": [
+      "allumer",
+      "paraître",
+      "rappeler",
+      "réussir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "retourner",
+    "options": [
+      "refuser",
+      "célébrer",
+      "retourner",
+      "observer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "ranger",
+    "options": [
+      "rêver",
+      "rendre",
+      "cultiver",
+      "ranger"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "échouer",
+    "options": [
+      "arrêter",
+      "échouer",
+      "extraire",
+      "mériter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "rendre",
+    "options": [
+      "rêver",
+      "guider",
+      "interrompre",
+      "rendre"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "vérifier",
+    "options": [
+      "vérifier",
+      "importer",
+      "admirer",
+      "optimiser"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "baisser",
+    "options": [
+      "corriger",
+      "baisser",
+      "jamais",
+      "échouer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "garantir",
+    "options": [
+      "cultiver",
+      "garantir",
+      "admirer",
+      "heureusement"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "adorer",
+    "options": [
+      "préparer",
+      "améliorer",
+      "paraître",
+      "adorer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "protéger",
+    "options": [
+      "garantir",
+      "protéger",
+      "lentement",
+      "heureusement"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "heureusement",
+    "options": [
+      "occuper",
+      "participer",
+      "heureusement",
+      "saluer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "expliquer",
+    "options": [
+      "souhaiter",
+      "rêver",
+      "mélanger",
+      "expliquer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "exporter",
+    "options": [
+      "observer",
+      "lentement",
+      "vieillir",
+      "exporter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "encourager",
+    "options": [
+      "construire",
+      "rêver",
+      "encourager",
+      "tandis"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "valider",
+    "options": [
+      "bouger",
+      "oublier",
+      "investir",
+      "valider"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "transmettre",
+    "options": [
+      "accélérer",
+      "transmettre",
+      "défendre",
+      "manipuler"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "disparaître",
+    "options": [
+      "admirer",
+      "écarter",
+      "cependant",
+      "disparaître"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "écarter",
+    "options": [
+      "écarter",
+      "ranger",
+      "refuser",
+      "préparer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "cependant",
+    "options": [
+      "préparer",
+      "cependant",
+      "exporter",
+      "rappeler"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "subvenir",
+    "options": [
+      "choisir",
+      "subvenir",
+      "baisser",
+      "convaincre"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "manipuler",
+    "options": [
+      "tandis",
+      "oublier",
+      "admirer",
+      "manipuler"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "pourtant",
+    "options": [
+      "mélanger",
+      "réussir",
+      "pourtant",
+      "profiter"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "attaquer",
+    "options": [
+      "attaquer",
+      "mélanger",
+      "multiplier",
+      "terminer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "rêver",
+    "options": [
+      "expliquer",
+      "accueillir",
+      "lentement",
+      "rêver"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "attendre",
+    "options": [
+      "déboguer",
+      "défendre",
+      "célébrer",
+      "attendre"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "augmenter",
+    "options": [
+      "augmenter",
+      "interrompre",
+      "disparaître",
+      "heureusement"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "compiler",
+    "options": [
+      "compiler",
+      "refuser",
+      "découvrir",
+      "éteindre"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "anticiper",
+    "options": [
+      "anticiper",
+      "diviser",
+      "préparer",
+      "adorer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "bouger",
+    "options": [
+      "heureusement",
+      "bouger",
+      "terminer",
+      "installer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "rapidement",
+    "options": [
+      "cependant",
+      "développer",
+      "subvenir",
+      "rapidement"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "négocier",
+    "options": [
+      "négocier",
+      "anticiper",
+      "protéger",
+      "préparer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "regretter",
+    "options": [
+      "détruire",
+      "regretter",
+      "terminer",
+      "rappeler"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "observer",
+    "options": [
+      "observer",
+      "voyager",
+      "organiser",
+      "retourner"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "recycler",
+    "options": [
+      "lentement",
+      "recycler",
+      "importer",
+      "investir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "corriger",
+    "options": [
+      "corriger",
+      "appartenir",
+      "multiplier",
+      "réussir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "optimiser",
+    "options": [
+      "compiler",
+      "vieillir",
+      "optimiser",
+      "voyager"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "malheureusement",
+    "options": [
+      "expliquer",
+      "malheureusement",
+      "toujours",
+      "avertir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "souhaiter",
+    "options": [
+      "multiplier",
+      "optimiser",
+      "contribuer",
+      "souhaiter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "programmer",
+    "options": [
+      "programmer",
+      "choisir",
+      "cependant",
+      "observer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "célébrer",
+    "options": [
+      "terminer",
+      "célébrer",
+      "valider",
+      "subvenir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "interrompre",
+    "options": [
+      "rappeler",
+      "corriger",
+      "tandis",
+      "interrompre"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "participer",
+    "options": [
+      "jamais",
+      "tandis",
+      "rêver",
+      "participer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "saluer",
+    "options": [
+      "souhaiter",
+      "programmer",
+      "réussir",
+      "saluer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "vieillir",
+    "options": [
+      "exporter",
+      "augmenter",
+      "vieillir",
+      "construire"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "voyager",
+    "options": [
+      "attaquer",
+      "rappeler",
+      "voyager",
+      "corriger"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "annoncer",
+    "options": [
+      "attaquer",
+      "diviser",
+      "baisser",
+      "annoncer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "oublier",
+    "options": [
+      "grandir",
+      "programmer",
+      "tandis",
+      "oublier"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "remplacer",
+    "options": [
+      "expliquer",
+      "participer",
+      "remplacer",
+      "grandir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "avertir",
+    "options": [
+      "sélectionner",
+      "extraire",
+      "adorer",
+      "avertir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "jamais",
+    "options": [
+      "multiplier",
+      "jamais",
+      "annoncer",
+      "parfois"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "importer",
+    "options": [
+      "protéger",
+      "importer",
+      "disparaître",
+      "baisser"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "contribuer",
+    "options": [
+      "découvrir",
+      "bouger",
+      "participer",
+      "contribuer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "installer",
+    "options": [
+      "tandis",
+      "diviser",
+      "toujours",
+      "installer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "diviser",
+    "options": [
+      "diviser",
+      "garantir",
+      "toujours",
+      "continuer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "tandis",
+    "options": [
+      "adorer",
+      "tandis",
+      "installer",
+      "négocier"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "occuper",
+    "options": [
+      "diminuer",
+      "écarter",
+      "occuper",
+      "voyager"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "toujours",
+    "options": [
+      "ranger",
+      "bouger",
+      "toujours",
+      "disparaître"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "détruire",
+    "options": [
+      "détruire",
+      "protéger",
+      "baisser",
+      "arrêter"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "refuser",
+    "options": [
+      "remplacer",
+      "refuser",
+      "construire",
+      "pourtant"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "déboguer",
+    "options": [
+      "allumer",
+      "déboguer",
+      "surprendre",
+      "mélanger"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "découvrir",
+    "options": [
+      "détruire",
+      "découvrir",
+      "corriger",
+      "mélanger"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "partager",
+    "options": [
+      "sélectionner",
+      "continuer",
+      "partager",
+      "multiplier"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "extraire",
+    "options": [
+      "défendre",
+      "partager",
+      "retourner",
+      "extraire"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "organiser",
+    "options": [
+      "organiser",
+      "vieillir",
+      "avertir",
+      "accélérer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "guider",
+    "options": [
+      "attaquer",
+      "rappeler",
+      "guider",
+      "réussir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "mériter",
+    "options": [
+      "construire",
+      "craindre",
+      "mériter",
+      "guider"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "essayer",
+    "options": [
+      "vérifier",
+      "créer",
+      "essayer",
+      "disparaître"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "accepter",
+    "options": [
+      "allumer",
+      "multiplier",
+      "accepter",
+      "annoncer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "profiter",
+    "options": [
+      "extraire",
+      "profiter",
+      "essayer",
+      "retourner"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "développer",
+    "options": [
+      "développer",
+      "participer",
+      "importer",
+      "lentement"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "lentement",
+    "options": [
+      "investir",
+      "lentement",
+      "garantir",
+      "améliorer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "éteindre",
+    "options": [
+      "éteindre",
+      "manipuler",
+      "rapidement",
+      "garantir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "arrêter",
+    "options": [
+      "éteindre",
+      "saluer",
+      "arrêter",
+      "avertir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "multiplier",
+    "options": [
+      "installer",
+      "multiplier",
+      "rappeler",
+      "détruire"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "surprendre",
+    "options": [
+      "surprendre",
+      "annoncer",
+      "éteindre",
+      "convaincre"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "cultiver",
+    "options": [
+      "retourner",
+      "cultiver",
+      "baisser",
+      "craindre"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "mélanger",
+    "options": [
+      "organiser",
+      "mélanger",
+      "bouger",
+      "disparaître"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "grandir",
+    "options": [
+      "souhaiter",
+      "écarter",
+      "grandir",
+      "refuser"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "rappeler",
+    "options": [
+      "déboguer",
+      "encourager",
+      "tandis",
+      "rappeler"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "défendre",
+    "options": [
+      "optimiser",
+      "accélérer",
+      "attendre",
+      "défendre"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "sélectionner",
+    "options": [
+      "malheureusement",
+      "célébrer",
+      "jamais",
+      "sélectionner"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "construire",
+    "options": [
+      "contribuer",
+      "saluer",
+      "construire",
+      "occuper"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "améliorer",
+    "options": [
+      "allumer",
+      "améliorer",
+      "multiplier",
+      "convaincre"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "craindre",
+    "options": [
+      "craindre",
+      "tandis",
+      "importer",
+      "recycler"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "décrire",
+    "options": [
+      "convaincre",
+      "décrire",
+      "vieillir",
+      "recycler"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "continuer",
+    "options": [
+      "encourager",
+      "toujours",
+      "refuser",
+      "continuer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "réussir",
+    "options": [
+      "réussir",
+      "oublier",
+      "optimiser",
+      "allumer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "investir",
+    "options": [
+      "défendre",
+      "appartenir",
+      "investir",
+      "encourager"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "choisir",
+    "options": [
+      "négocier",
+      "choisir",
+      "écarter",
+      "installer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "accélérer",
+    "options": [
+      "tandis",
+      "observer",
+      "accélérer",
+      "participer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "allumer",
+    "options": [
+      "écarter",
+      "manipuler",
+      "allumer",
+      "convaincre"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "terminer",
+    "options": [
+      "rendre",
+      "construire",
+      "terminer",
+      "vieillir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "admirer",
+    "options": [
+      "admirer",
+      "rêver",
+      "mélanger",
+      "disparaître"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "moderate",
+    "correct": "appartenir",
+    "options": [
+      "guider",
+      "sélectionner",
+      "disparaître",
+      "appartenir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "accueillir",
+    "options": [
+      "retourner",
+      "accueillir",
+      "détruire",
+      "échouer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "moderate",
+    "correct": "préparer",
+    "options": [
+      "avertir",
+      "refuser",
+      "saluer",
+      "préparer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "diminuer",
+    "options": [
+      "accélérer",
+      "sélectionner",
+      "observer",
+      "diminuer"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "moderate",
+    "correct": "convaincre",
+    "options": [
+      "adorer",
+      "extraire",
+      "convaincre",
+      "admirer"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "moderate",
+    "correct": "parfois",
+    "options": [
+      "subvenir",
+      "organiser",
+      "détruire",
+      "parfois"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "courir",
+    "options": [
+      "mourir",
+      "dormir",
+      "courir",
+      "sourire"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "finir",
+    "options": [
+      "ouvrir",
+      "offrir",
+      "écrire",
+      "finir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "venir",
+    "options": [
+      "punir",
+      "servir",
+      "tenir",
+      "venir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "croire",
+    "options": [
+      "croire",
+      "voire",
+      "voire",
+      "boire"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "monter",
+    "options": [
+      "rater",
+      "chanter",
+      "danser",
+      "monter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "plonger",
+    "options": [
+      "ranger",
+      "manger",
+      "changer",
+      "plonger"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "loir",
+    "options": [
+      "boire",
+      "loir",
+      "pour",
+      "voir"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "hard",
+    "correct": "aimer",
+    "options": [
+      "marcher",
+      "parler",
+      "aimer",
+      "rester"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "répandre",
+    "options": [
+      "attendre",
+      "répandre",
+      "entendre",
+      "descendre"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "hard",
+    "correct": "lire",
+    "options": [
+      "dire",
+      "rire",
+      "lire",
+      "écrire"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "mettre",
+    "options": [
+      "battre",
+      "promettre",
+      "mettre",
+      "admettre"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "tenir",
+    "options": [
+      "tenir",
+      "revenir",
+      "venir",
+      "devenir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "sortir",
+    "options": [
+      "courir",
+      "mourir",
+      "dormir",
+      "sortir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "sortir",
+    "options": [
+      "mentir",
+      "tenir",
+      "partir",
+      "sortir"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "prendre",
+    "options": [
+      "comprendre",
+      "apprendre",
+      "prendre",
+      "surprendre"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "pouvoir",
+    "options": [
+      "pouvoir",
+      "vouloir",
+      "savoir",
+      "devoir"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "rire",
+    "options": [
+      "suivre",
+      "vivre",
+      "écrire",
+      "rire"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "danser",
+    "options": [
+      "danser",
+      "glisser",
+      "penser",
+      "lancer"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "projeter",
+    "options": [
+      "jeter",
+      "rejeter",
+      "projeter",
+      "acheter"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "lasser",
+    "options": [
+      "lasser",
+      "casser",
+      "passer",
+      "tasser"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "loir",
+    "options": [
+      "loir",
+      "voir",
+      "boire",
+      "pour"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "tamer",
+    "options": [
+      "aimer",
+      "tamer",
+      "fermer",
+      "ramer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "hard",
+    "correct": "marcher",
+    "options": [
+      "parler",
+      "marcher",
+      "chercher",
+      "montrer"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "hard",
+    "correct": "poser",
+    "options": [
+      "poser",
+      "oser",
+      "doser",
+      "rosé"
+    ],
+    "answer_index": 0
+  },
+  {
+    "level": "hard",
+    "correct": "forter",
+    "options": [
+      "morter",
+      "sorter",
+      "porter",
+      "forter"
+    ],
+    "answer_index": 3
+  },
+  {
+    "level": "hard",
+    "correct": "lancer",
+    "options": [
+      "avancer",
+      "penser",
+      "lancer",
+      "danser"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "rater",
+    "options": [
+      "monter",
+      "rater",
+      "chanter",
+      "compter"
+    ],
+    "answer_index": 1
+  },
+  {
+    "level": "hard",
+    "correct": "choisir",
+    "options": [
+      "bâtir",
+      "punir",
+      "choisir",
+      "finir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "grandir",
+    "options": [
+      "rougir",
+      "jaunir",
+      "grandir",
+      "réunir"
+    ],
+    "answer_index": 2
+  },
+  {
+    "level": "hard",
+    "correct": "nourrir",
+    "options": [
+      "applaudir",
+      "nourrir",
+      "réussir",
+      "établir"
+    ],
+    "answer_index": 1
+  }
+]

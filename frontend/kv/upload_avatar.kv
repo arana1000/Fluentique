@@ -1,0 +1,82 @@
+<UploadAvatarScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Header
+        FloatLayout:
+            size_hint_y: None
+            height: dp(100)
+            canvas.before:
+                Color:
+                    rgba: 1, 0.8, 0.8, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Label:
+                text: "Add a profile photo"
+                font_size: '18sp'
+                font_name: "assets/ProximaSoft-Bold"
+                color: 1, 1, 1, 1
+                pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+
+        # Content
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(30), dp(10)
+            spacing: dp(20)
+
+            Label:
+                text: "Give your profile a photo so your friends know it's you"
+                font_size: '14sp'
+                font_name: "assets/ProximaSoft-Regular"
+                color: 0.4, 0.4, 0.4, 1
+                halign: 'center'
+                text_size: self.width, None
+                size_hint_y: None
+                height: dp(40)
+
+            FloatLayout:
+                size_hint_y: None
+                height: dp(200)
+
+                canvas.before:
+                    Color:
+                        rgba: 0.9, 0.9, 0.9, 1
+                    Ellipse:
+                        pos: self.center_x - dp(80), self.center_y - dp(80)
+                        size: dp(160), dp(160)
+
+                Image:
+                    id: preview_image
+                    source: 'assets/default_avatar.png'
+                    size_hint: None, None
+                    size: dp(120), dp(120)
+                    allow_stretch: True
+                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            # Add Photo Button
+            Button:
+                text: "ADD A PHOTO"
+                font_name: "assets/ProximaSoft-Bold"
+                background_color: 1, 0.6, 0.6, 1
+                color: 1, 1, 1, 1
+                size_hint_y: None
+                height: dp(50)
+                on_release: root.pick_and_upload_image()
+
+            # Skip Button
+            Button:
+                text: "SKIP"
+                font_name: "assets/ProximaSoft-Regular"
+                background_color: 0, 0, 0, 0
+                color: 0.5, 0.5, 0.5, 1
+                size_hint_y: None
+                height: dp(40)
+                on_release: app.root.current = 'profile'

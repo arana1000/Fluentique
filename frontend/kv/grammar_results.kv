@@ -1,0 +1,102 @@
+<GrammarResultsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # Background color
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Results"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '24sp'
+            color: 0, 0, 0, 1
+            size_hint_y: None
+            height: dp(50)
+
+        ScrollView:
+            size_hint_y: 1
+            do_scroll_x: False
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(20)
+                padding: dp(10)
+
+                # === Sentence Puzzle Section ===
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: 0.9, 0.95, 1, 1  # Light blueish section background
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                    Label:
+                        text: "Sentence Puzzle Results"
+                        font_name: "assets/ProximaSoft-Bold"
+                        font_size: '20sp'
+                        color: 0, 0, 0, 1
+                        size_hint_y: None
+                        height: dp(40)
+
+                    BoxLayout:
+                        id: sentence_results_box
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(10)
+                        padding: dp(10)
+                        size_hint_x: None
+                        width: root.width * 0.95  # Add this
+
+
+                # === Speech Practice Section ===
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: 1, 0.95, 0.9, 1  # Light orange-ish section background
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                    Label:
+                        text: "Speech Practice Feedback"
+                        font_name: "assets/ProximaSoft-Bold"
+                        font_size: '20sp'
+                        color: 0, 0, 0, 1
+                        size_hint_y: None
+                        height: dp(40)
+
+                    BoxLayout:
+                        id: speech_results_box
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(10)
+                        padding: dp(10)
+                        size_hint_x: None
+                        width: root.width * 0.95  # Add this
+
+    Button:
+        text: "Back to Home"
+        font_name: "assets/ProximaSoft-Bold"
+        size_hint_y: None
+        height: dp(50)
+        background_color: 0.7, 0.7, 0.7, 1
+        on_release:
+            app.root.current = 'home_incomplete'

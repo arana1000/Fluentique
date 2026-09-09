@@ -1,0 +1,55 @@
+<ResultsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # F6F7FF background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Quiz Complete!"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '26sp'
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(50)
+            halign: 'center'
+            text_size: self.size
+
+        Label:
+            id: score_label
+            text: "Score: "
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '20sp'
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(30)
+            halign: 'left'
+            text_size: self.size
+
+        ScrollView:
+            do_scroll_x: False
+            bar_width: dp(6)
+
+            BoxLayout:
+                id: feedback_box
+                orientation: 'vertical'
+                spacing: dp(10)
+                padding: [0, dp(10)]
+                size_hint_y: None
+                height: self.minimum_height
+
+        Button:
+            text: "Return to Home"
+            font_name: "assets/ProximaSoft-Bold"
+            background_normal: ''
+            background_color: 1, 0.773, 0.753, 1  # Peach pink
+            color: 1, 0, 0, 1
+            size_hint_y: None
+            height: dp(55)
+            on_release:
+                app.root.current = 'home_incomplete'

@@ -1,0 +1,38 @@
+# === Backend / API ===
+fastapi==0.95.1
+uvicorn==0.18.0
+requests
+python-dotenv==0.21.0
+python-multipart
+email-validator
+
+# === Firebase / Cloud Services ===
+firebase-admin==5.2.0
+google-cloud-speech
+boto3
+openai
+
+# === Machine Learning ===
+torch==1.13.0
+transformers==4.24.0
+numpy==1.23.4
+scikit-learn==1.1.3
+pandas
+sentencepiece
+
+# === Audio / Speech ===
+librosa==0.9.2
+soundfile
+sounddevice
+scipy
+pydub==0.25.1
+pygame
+
+# === Translation ===
+deep-translator
+
+# === Frontend ===
+kivy==2.1.0
+Pillow==9.2.0
+plyer
+matplotlib

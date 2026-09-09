@@ -1,0 +1,62 @@
+<IntroContinueScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20), dp(40)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # F6F7FF
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Image:
+            source: 'assets/logo.png'
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {'center_x': 0.5}
+
+        FloatLayout:
+            size_hint_y: None
+            height: dp(60)
+
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                RoundedRectangle:
+                    pos: self.center_x - self.width / 2 + dp(40), self.center_y - dp(10)
+                    size: dp(160), dp(40)
+                    radius: [10]
+
+            Label:
+                text: '" Hi I am Fluentique "'
+                font_name: 'assets/ProximaSoft-Regular.ttf'
+                font_size: '16sp'
+                color: 55/255, 71/255, 79/255, 1
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+
+        Widget:
+
+        Button:
+            text: "CONTINUE"
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            background_normal: ''
+            background_color: 1, 0.0, 0.0, 0
+            color: 1, 0, 0, 1
+            size_hint_y: None
+            height: dp(55)
+            on_release:
+                app.root.current = 'intro_get_started'
+            canvas.before:
+                Color:
+                    rgba: 1, 0.773, 0.753, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [25]
+                Color:
+                    rgba: 1, 0, 0, 1
+                Line:
+                    width: 2
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, 25)

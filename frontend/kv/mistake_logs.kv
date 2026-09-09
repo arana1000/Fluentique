@@ -1,0 +1,234 @@
+<QuizMistakesLogsScreen>:
+    name: "quiz_mistakes_logs"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1  # Fluentique dark background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Quiz Mistakes Log"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "18sp"
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(40)
+
+        ScrollView:
+            GridLayout:
+                id: quiz_mistakes_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+                padding: dp(10), 0
+
+        Button:
+            text: "Back"
+            font_name: "assets/ProximaSoft-Regular"
+            size_hint: None, None
+            size: dp(100), dp(40)
+            pos_hint: {"center_x": 0.5}
+            background_color: 0.2, 0.2, 0.2, 1
+            color: 1, 1, 1, 1
+            on_release: root.manager.current = "mistake_log_menu"
+
+
+<QuizScoresLogsScreen>:
+    name: "quiz_scores_logs"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1  # Dark background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Quiz Scores Log"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "18sp"
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(40)
+
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                id: quiz_scores_container
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(10)
+                padding: dp(10)
+
+        Button:
+            text: "Back"
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: "14sp"
+            size_hint_y: None
+            height: dp(40)
+            background_color: 0.1, 0.1, 0.1, 1
+            color: 1, 1, 1, 1
+            on_release: root.manager.current = "mistake_log_menu"
+
+
+<SentenceResultsLogsScreen>:
+    name: "sentence_results_logs"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Sentence Puzzle Results"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "18sp"
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(40)
+
+        ScrollView:
+            do_scroll_x: False
+            GridLayout:
+                id: sentence_results_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(5)
+
+        Button:
+            text: "Back"
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: "14sp"
+            background_color: 0.2, 0.2, 0.2, 1
+            size_hint_y: None
+            height: dp(40)
+            on_release: root.manager.current = "mistake_log_menu"
+
+
+<SpeechFeedbackLogsScreen>:
+    name: "speech_feedback_logs"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Speech Feedback Log"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "18sp"
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(40)
+
+        ScrollView:
+            do_scroll_x: False
+            GridLayout:
+                id: speech_feedback_container
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(12)
+
+        Button:
+            text: "Back"
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: "15sp"
+            background_color: 0.2, 0.2, 0.2, 1
+            size_hint_y: None
+            height: dp(45)
+            on_release: root.manager.current = "mistake_log_menu"
+
+
+
+<ChatTranscriptsLogsScreen>:
+    name: "chat_transcripts_logs"
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.05, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "AI Chat Transcripts"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: "18sp"
+            color: 1, 1, 1, 1
+            size_hint_y: None
+            height: dp(30)
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(40)
+            spacing: dp(10)
+
+            TextInput:
+                id: transcript_search
+                hint_text: "Search transcripts..."
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: "14sp"
+                foreground_color: 1, 1, 1, 1
+                background_color: 0.2, 0.2, 0.2, 1
+                cursor_color: 1, 1, 1, 1
+                multiline: False
+                on_text: root.filter_transcripts(self.text)
+
+            Button:
+                text: "Clear"
+                font_size: "13sp"
+                font_name: "assets/ProximaSoft-Bold"
+                background_color: 0.3, 0.3, 0.3, 1
+                size_hint_x: None
+                width: dp(80)
+                on_release:
+                    transcript_search.text = ''
+
+        ScrollView:
+            do_scroll_x: False
+            GridLayout:
+                id: chat_transcripts_container
+                cols: 1
+                spacing: dp(15)
+                padding: dp(5)
+                size_hint_y: None
+                height: self.minimum_height
+
+        Button:
+            text: "Back"
+            size_hint_y: None
+            height: dp(40)
+            font_name: "assets/ProximaSoft-Bold"
+            background_color: 0.1, 0.1, 0.1, 1
+            color: 1, 1, 1, 1
+            on_release: root.manager.current = "mistake_log_menu"
+
+
+
+
+

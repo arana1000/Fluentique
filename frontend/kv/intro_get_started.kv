@@ -1,0 +1,70 @@
+<IntroGetStartedScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20), dp(40)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # F6F7FF
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Image:
+            source: 'assets/logo.png'
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {'center_x': 0.5}
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(20), 0
+
+            Label:
+                text: "An effective and enjoyable way to language learning"
+                font_name: "assets/ProximaSoft-Regular.ttf"
+                font_size: '14sp'
+                color: 55/255, 71/255, 79/255, 1
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]
+
+        Widget:
+
+        Button:
+            text: "GET STARTED"
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            background_normal: ''
+            background_color: 1, 0.773, 0.753, 1  # FFC5C0
+            color: 1, 0, 0, 1
+            size_hint_y: None
+            height: dp(55)
+            on_release:
+                app.root.current = 'registration'
+            canvas.before:
+                Color:
+                    rgba: 1, 0.773, 0.753, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [25]
+
+        Button:
+            text: "I ALREADY HAVE AN ACCOUNT"
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            background_normal: ''
+            background_color: 1, 1, 1, 1
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(55)
+            on_release:
+                app.root.current = 'login'
+            canvas.before:
+                Color:
+                    rgba: 0.8, 0.8, 0.8, 1  # optional grey border
+                Line:
+                    width: 1.5
+                    rectangle: (self.x, self.y, self.width, self.height)

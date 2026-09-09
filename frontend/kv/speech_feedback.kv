@@ -1,0 +1,67 @@
+<SpeechFeedbackScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # Soft background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: "Speech Feedback"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '22sp'
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(40)
+
+        Label:
+            id: transcription_label
+            text: ""
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '18sp'
+            color: 55/255, 71/255, 79/255, 1
+            text_size: self.width * 0.9, None
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: None
+            height: self.texture_size[1] + dp(10)
+
+        ScrollView:
+            size_hint_y: 1
+            do_scroll_x: False
+
+            Label:
+                id: speech_feedback_label
+                text: ""
+                font_name: "assets/ProximaSoft-Regular"
+                font_size: '16sp'
+                color: 55/255, 71/255, 79/255, 1
+                text_size: self.width * 0.9, None
+                halign: 'left'
+                valign: 'top'
+                size_hint_y: None
+                height: self.texture_size[1] + dp(20)
+                padding: dp(10), dp(10)
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(10)
+
+            Button:
+                text: "Retry Speaking"
+                font_name: "assets/ProximaSoft-Bold"
+                background_color: 0.7, 0.7, 0.7, 1
+                on_release:
+                    app.root.current = 'speech_practice'
+
+            Button:
+                id: next_button
+                text: "Next Sentence"
+                font_name: "assets/ProximaSoft-Bold"
+                background_color: 0.5, 0.4, 0.8, 1
+                on_release: root.continue_to_next()

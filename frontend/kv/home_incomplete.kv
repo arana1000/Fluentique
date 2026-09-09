@@ -1,0 +1,223 @@
+<HomeIncompleteScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # === TOP BANNER ===
+        FloatLayout:
+            size_hint_y: None
+            height: dp(120)
+            canvas.before:
+                Color:
+                    rgba: 1, 0.8, 0.8, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Image:
+                source: 'assets/menu.png'
+                size_hint: None, None
+                size: dp(25), dp(25)
+                pos_hint: {'x': 0.02, 'center_y': 0.8}
+
+            Label:
+                text: "Section 01 : Rookie"
+                font_size: '16sp'
+                color: 1, 1, 1, 1
+                pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: dp(12)
+                size_hint: None, None
+                size: dp(320), dp(30)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+                padding: dp(10), 0
+                AnchorLayout:
+                    anchor_x: 'center'
+                    Label:
+                        id: xp_label
+                        text: "XP: 720"
+                        font_name: "assets/ProximaSoft-Bold"
+                        font_size: '16sp'
+                        color: 0, 0, 0, 1
+                        valign: 'middle'
+                        halign: 'center'
+                        text_size: self.size
+
+                AnchorLayout:
+                    anchor_x: 'center'
+                    Label:
+                        id: streak_label
+                        text: "🔥 Streak: 2 days"
+                        font_name: "assets/ProximaSoft-Regular"
+                        font_size: '16sp'
+                        color: 0.5, 0.4, 0.8, 1
+                        valign: 'middle'
+                        halign: 'center'
+                        text_size: self.size
+
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(4)
+                    size_hint: None, None
+                    size: dp(60), dp(30)
+                    padding: 0, 0
+
+                    Image:
+                        source: 'assets/gems.png'
+                        size_hint: None, None
+                        size: dp(20), dp(20)
+                        allow_stretch: True
+
+                    Label:
+                        text: "50"
+                        font_size: '14sp'
+                        color: 0, 0, 0, 1
+                        valign: 'middle'
+                        halign: 'left'
+                        text_size: self.size
+
+        # === MAIN CONTENT ===
+        FloatLayout:
+            Image:
+                source: 'assets/chest.png'
+                size_hint: None, None
+                size: dp(80), dp(80)
+                pos_hint: {'center_x': 0.5, 'top': 0.85}
+
+            Image:
+                source: 'assets/star_empty.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.5, 'top': 0.65}
+
+            Image:
+                source: 'assets/star_empty.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.5, 'top': 0.5}
+
+            Image:
+                source: 'assets/star_empty.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.5, 'top': 0.35}
+
+            Label:
+                text: "Start"
+                font_size: '12sp'
+                size_hint: None, None
+                size: self.texture_size
+                padding: dp(10), dp(5)
+                color: 1, 0, 0, 1
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    RoundedRectangle:
+                        pos: self.x - dp(5), self.y - dp(2)
+                        size: self.width + dp(10), self.height + dp(4)
+                        radius: [10]
+                pos_hint: {'center_x': 0.5}
+                y: root.height * 0.2
+
+        # === NAVIGATION BAR ===
+        AnchorLayout:
+            size_hint_y: None
+            height: dp(70)
+            anchor_x: 'center'
+
+            BoxLayout:
+                size_hint: None, None
+                size: dp(360), dp(70)
+                padding: dp(10), 0
+                spacing: dp(10)
+                canvas.before:
+                    Color:
+                        rgba: 1, 1, 1, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [20, 20, 0, 0]
+
+                GridLayout:
+                    cols: 6
+                    spacing: dp(15)
+                    size_hint: 1, 1
+
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.root.current = 'home_incomplete'
+                        Image:
+                            source: 'assets/nav_home.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.root.current = 'quiz'
+                        Image:
+                            source: 'assets/nav_brain.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.root.current = 'grammar_exercise'
+                        Image:
+                            source: 'assets/nav_mic.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.root.current = 'chatbot_tutor'
+                        Image:
+                            source: 'assets/nav_chatbot.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+                    
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.go_to_leaderboard()
+                        Image:
+                            source: 'assets/nav_leaderboard.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+
+                    Button:
+                        background_normal: ''
+                        background_down: ''
+                        background_color: 0, 0, 0, 0
+                        on_release: app.root.current = 'profile'
+                        Image:
+                            source: 'assets/nav_profile.png'
+                            size_hint: None, None
+                            size: dp(36), dp(36)
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y

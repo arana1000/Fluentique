@@ -1,0 +1,102 @@
+<HomeCompletedScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 0.8, 0.7, 1, 1  # Soft purple background for header
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # --- Header ---
+        BoxLayout:
+            size_hint_y: None
+            height: dp(120)
+            padding: dp(10)
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    rgba: 0.6, 0.5, 0.9, 1  # Darker purple
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Image:
+                source: 'assets/icons/menu.png'
+                size_hint: None, None
+                size: dp(24), dp(24)
+            Label:
+                text: "Section 01 : Rookie"
+                font_name: "assets/fonts/ProximaSoft-Bold.ttf"
+                font_size: '18sp'
+                color: 1, 1, 1, 1
+                halign: 'center'
+            BoxLayout:
+                size_hint_x: None
+                width: dp(100)
+                spacing: dp(5)
+                Image:
+                    source: 'assets/icons/gems.png'
+                    size_hint: None, None
+                    size: dp(20), dp(20)
+                Label:
+                    text: "50"
+                    color: 1, 1, 1, 1
+                Image:
+                    source: 'assets/icons/heart.png'
+                    size_hint: None, None
+                    size: dp(20), dp(20)
+                Label:
+                    text: "5"
+                    color: 1, 1, 1, 1
+
+        # --- Main Content ---
+        FloatLayout:
+            Image:
+                source: 'assets/icons/treasure_chest.png'
+                size_hint: None, None
+                size: dp(80), dp(80)
+                pos_hint: {'center_x': 0.5, 'top': 0.85}
+            Image:
+                source: 'assets/icons/tick_circle.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.4, 'center_y': 0.6}
+            Image:
+                source: 'assets/icons/tick_circle.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            Image:
+                source: 'assets/icons/tick_circle.png'
+                size_hint: None, None
+                size: dp(60), dp(60)
+                pos_hint: {'center_x': 0.6, 'center_y': 0.4}
+            Image:
+                source: 'assets/icons/trophy.png'
+                size_hint: None, None
+                size: dp(70), dp(70)
+                pos_hint: {'center_x': 0.5, 'y': 0.05}
+
+        # --- Nav Bar ---
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            spacing: dp(20)
+            padding: dp(20)
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Button:
+                text: '🏠'
+            Button:
+                text: '📊'
+            Button:
+                text: '🏅'
+            Button:
+                text: '👤'
+            Button:
+                text: '🔔'

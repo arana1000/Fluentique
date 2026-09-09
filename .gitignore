@@ -1,0 +1,45 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Private credentials
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Runtime logs
+logs/
+backend/logs/
+
+# Local user progress/data
+data/progress.json
+
+# Large local ML models
+backend/models/
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# AWS / cloud credential exports
+*accessKeys*.csv
+*access_keys*.csv
+
+# Local progress / runtime data
+backend/data/progress.json
+frontend/data/progress.json
+backend/data/fluentique_score_log.txt
+
+# Recorded user audio
+frontend/recorded_audio.wav

@@ -1,0 +1,216 @@
+<RegistrationScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20), dp(20), dp(20), dp(10)
+        spacing: dp(12)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1  # Background F6F7FF
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+        
+        Button:
+            background_normal: 'assets/back_arrow.png'
+            background_down: 'assets/back_arrow.png'
+            size_hint: None, None
+            size: dp(60), dp(60)
+            pos_hint: {'x': 0.02, 'top': 0.98}
+            on_release:
+                app.root.current = 'login'
+
+        Image:
+            source: 'assets/logo.png'
+            size_hint: None, None
+            size: dp(160), dp(160)
+            pos_hint: {'center_x': 0.5}
+
+        Label:
+            text: "Registration"
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            font_size: '26sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Label:
+            text: "Fill the following information to register!"
+            font_name: "assets/ProximaSoft-Regular.ttf"
+            font_size: '13sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: dp(15)
+            padding: [dp(5), dp(0), dp(5), 0]
+
+            # --- Email Field ---
+            BoxLayout:
+                size_hint_y: None
+                height: dp(55)
+                padding: dp(15), 0
+                spacing: dp(10)
+                canvas.before:
+                    Color:
+                        rgba: 0.9, 0.9, 0.9, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [25]
+                TextInput:
+                    id: email_input
+                    hint_text: "Enter Email"
+                    font_name: "assets/ProximaSoft-Regular.ttf"
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    foreground_color: 55/255, 71/255, 79/255, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    size_hint_x: 0.85
+                    padding: [dp(10), dp(15)]
+
+            # --- Password Field ---
+            BoxLayout:
+                size_hint_y: None
+                height: dp(55)
+                padding: dp(15), 0
+                spacing: dp(10)
+                canvas.before:
+                    Color:
+                        rgba: 0.9, 0.9, 0.9, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [25]
+                TextInput:
+                    id: password_input
+                    hint_text: "Enter Password"
+                    password: True
+                    font_name: "assets/ProximaSoft-Regular.ttf"
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    foreground_color: 55/255, 71/255, 79/255, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    size_hint_x: 0.7
+                    padding: [dp(10), dp(15)]
+                ToggleButton:
+                    id: toggle_password
+                    text: 'Show' if self.state == 'normal' else 'Hide'
+                    size_hint_x: 0.3
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 55/255, 71/255, 79/255, 1
+                    font_name: "assets/ProximaSoft-Regular.ttf"
+                    on_state:
+                        password_input.password = (self.state == 'normal')
+
+            # --- Confirm Password Field ---
+            BoxLayout:
+                size_hint_y: None
+                height: dp(55)
+                padding: dp(15), 0
+                spacing: dp(10)
+                canvas.before:
+                    Color:
+                        rgba: 0.9, 0.9, 0.9, 1
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [25]
+                TextInput:
+                    id: confirm_password_input
+                    hint_text: "Confirm Password"
+                    password: True
+                    font_name: "assets/ProximaSoft-Regular.ttf"
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    foreground_color: 55/255, 71/255, 79/255, 1
+                    halign: 'left'
+                    valign: 'middle'
+                    text_size: self.size
+                    size_hint_x: 0.7
+                    padding: [dp(10), dp(15)]
+                ToggleButton:
+                    id: toggle_confirm_password
+                    text: 'Show' if self.state == 'normal' else 'Hide'
+                    size_hint_x: 0.3
+                    background_normal: ''
+                    background_color: 0, 0, 0, 0
+                    color: 55/255, 71/255, 79/255, 1
+                    font_name: "assets/ProximaSoft-Regular.ttf"
+                    on_state:
+                        confirm_password_input.password = (self.state == 'normal')
+
+        Button:
+            text: "REGISTER"
+            on_release: root.register_user()
+            font_name: "assets/ProximaSoft-Bold.ttf"
+            background_normal: ''
+            background_color: 0, 0, 0, 0
+            color: 1, 0, 0, 1
+            size_hint_y: None
+            height: dp(55)
+            canvas.before:
+                Color:
+                    rgba: 1, 0.773, 0.753, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [25]
+                Color:
+                    rgba: 1, 0, 0, 1
+                Line:
+                    width: 2
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, 25)
+
+        Button:
+            text: "I ALREADY HAVE AN ACCOUNT"
+            font_name: "assets/ProximaSoft-Regular.ttf"
+            background_normal: ''
+            background_color: 1, 1, 1, 1  # white button
+            color: 55/255, 71/255, 79/255, 1  # text color
+            size_hint_y: None
+            height: dp(50)
+            on_release:
+                app.root.current = 'login'
+            canvas.before:
+                Color:
+                    rgba: 0.8, 0.8, 0.8, 1  # optional grey border
+                Line:
+                    width: 1.5
+                    rectangle: (self.x, self.y, self.width, self.height)
+
+
+        Widget:
+            size_hint_y: None
+            height: dp(20)
+
+
+        Label:
+            text: "By signing in to the application, you are not allowed to go against terms and services of the app"
+            font_name: "assets/ProximaSoft-Regular.ttf"
+            font_size: '10sp'
+            color: 55/255, 71/255, 79/255, 1
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.width, None
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+

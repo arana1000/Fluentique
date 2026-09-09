@@ -1,0 +1,169 @@
+<ProfileScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Top Banner
+        FloatLayout:
+            size_hint_y: None
+            height: dp(120)
+            canvas.before:
+                Color:
+                    rgba: 1, 0.8, 0.8, 1  # peach-pink
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Label:
+                text: "Profile"
+                font_size: '20sp'
+                font_name: "assets/ProximaSoft-Bold"
+                color: 1, 1, 1, 1
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            # Back Button (top-left corner)
+            Button:
+                text: "<"
+                font_size: '20sp'
+                font_name: "assets/ProximaSoft-Bold"
+                size_hint: None, None
+                size: dp(40), dp(40)
+                pos_hint: {'x': 0.02, 'center_y': 0.5}
+                background_color: 0, 0, 0, 0
+                color: 1, 1, 1, 1
+                on_release: app.root.current = 'home_incomplete'
+
+
+        ScrollView:
+            do_scroll_x: False
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+                spacing: dp(20)
+
+                # Profile Image + Change Avatar
+                FloatLayout:
+                    size_hint_y: None
+                    height: dp(160)
+
+                    Image:
+                        id: profile_image
+                        source: 'assets/default_avatar.png'
+                        size_hint: None, None
+                        size: dp(120), dp(120)
+                        allow_stretch: True
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.65}
+
+                        canvas.before:
+                            Color:
+                                rgba: 1, 1, 1, 1
+                            Ellipse:
+                                pos: self.pos
+                                size: self.size
+
+                    Button:
+                        text: "CHANGE AVATAR"
+                        font_size: '14sp'
+                        font_name: "assets/ProximaSoft-Regular"
+                        background_normal: ''
+                        background_color: 0, 0, 0, 0
+                        color: 0.5, 0.4, 0.8, 1
+                        size_hint: None, None
+                        size: dp(160), dp(30)
+                        pos_hint: {'center_x': 0.5, 'y': 0}
+                        on_release: app.root.current = 'upload_avatar'
+
+                # === Username ===
+                Label:
+                    text: "Username"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: '14sp'
+                    color: 0.2, 0.2, 0.2, 1
+                    size_hint_y: None
+                    height: dp(20)
+
+                TextInput:
+                    id: username_input
+                    font_name: "assets/ProximaSoft-Regular"
+                    background_color: 0.97, 0.97, 0.97, 1
+                    foreground_color: 0.2, 0.2, 0.2, 1
+                    hint_text: "Enter your username"
+                    multiline: False
+                    size_hint_y: None
+                    height: dp(40)
+                    padding: dp(10), dp(10)
+
+                # === Email (read-only) ===
+                Label:
+                    text: "Email"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: '14sp'
+                    color: 0.2, 0.2, 0.2, 1
+                    size_hint_y: None
+                    height: dp(20)
+
+                TextInput:
+                    id: email_input
+                    font_name: "assets/ProximaSoft-Regular"
+                    background_color: 0.97, 0.97, 0.97, 1
+                    foreground_color: 0.2, 0.2, 0.2, 1
+                    hint_text: "Email address"
+                    readonly: True
+                    multiline: False
+                    size_hint_y: None
+                    height: dp(40)
+                    padding: dp(10), dp(10)
+
+                # === Mistake Logs Button ===
+                Button:
+                    text: "📘 Mistake Logs"
+                    font_name: "assets/ProximaSoft-Regular"
+                    font_size: '15sp'
+                    size_hint_y: None
+                    height: dp(50)
+                    background_color: 0.3, 0.5, 0.8, 1
+                    color: 1, 1, 1, 1
+                    background_normal: ''
+                    background_down: ''
+                    canvas.before:
+                        Color:
+                            rgba: self.background_color
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [12]
+                    on_release:
+                        root.manager.current = "mistake_log_menu"
+
+
+                # === Save Button ===
+                Button:
+                    text: "Save Changes"
+                    font_name: "assets/ProximaSoft-Bold"
+                    font_size: '15sp'
+                    background_normal: ''
+                    background_color: 0.61, 0.53, 0.94, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: dp(50)
+                    on_release: root.save_profile()
+
+                # === Log Out Button ===
+                Button:
+                    text: "Log Out"
+                    font_name: "assets/ProximaSoft-Bold"
+                    font_size: '15sp'
+                    background_normal: ''
+                    background_color: 0.7, 0.2, 0.2, 1
+                    color: 1, 1, 1, 1
+                    size_hint_y: None
+                    height: dp(50)
+                    on_release: root.logout_user()

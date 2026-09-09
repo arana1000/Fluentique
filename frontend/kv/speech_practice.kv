@@ -1,0 +1,66 @@
+<SpeechPracticeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(20)
+        canvas.before:
+            Color:
+                rgba: 0.965, 0.969, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Progress bar at the very top
+        ProgressBar:
+            id: progress_bar
+            max: 10
+            height: dp(8)
+            size_hint_y: None
+            background_color: 0.8, 0.8, 0.8, 1
+            color: 0.5, 0.4, 0.8, 1
+
+        # Instruction text
+        Label:
+            text: "Speak this sentence:"
+            font_name: "assets/ProximaSoft-Bold"
+            font_size: '20sp'
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(30)
+
+        # Target sentence
+        Label:
+            id: speech_sentence_label
+            text: ""
+            font_name: "assets/ProximaSoft-Regular"
+            font_size: '18sp'
+            color: 55/255, 71/255, 79/255, 1
+            size_hint_y: None
+            height: dp(30)
+
+        # Mic icon centred
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            MicButton:
+                source: 'assets/mic.png'
+                size_hint: None, None
+                size: dp(150), dp(150)
+                on_press:
+                    from kivy.animation import Animation
+                    Animation(size=(dp(140), dp(140)), opacity=0.5, d=0.1).start(self)
+                on_release:
+                    from kivy.animation import Animation
+                    Animation(size=(dp(150), dp(150)), opacity=1, d=0.1).start(self)
+                    root.start_recording()
+
+
+
+        # Start Recording button at the bottom
+        Button:
+            text: "START RECORDING"
+            font_name: "assets/ProximaSoft-Bold"
+            size_hint_y: None
+            height: dp(50)
+            background_color: 0.3, 0.2, 0.4, 1
+            on_release: root.start_recording()
