@@ -11,15 +11,9 @@ from backend.utils.auth_utils import get_current_user
 
 # quiz_router.py
 # ----------------------
-# This file handles the routing for the quiz section of the app.
-# It provides functionality for fetching quiz questions, validating user responses,
-# and scoring. The quiz dynamically adjusts the difficulty level based on
-# the user’s performance, and it logs progress for further evaluation.
-#
-# Functions:
-# - fetch_quiz: Retrieves quiz questions and possible answers.
-# - submit_answer: Validates the user’s answer and provides immediate feedback.
-# - track_progress: Tracks the user's score and adjusts difficulty based on their answers.
+# This file handles the routing for the vocabulary quiz section of Fluentique.
+# It provides authenticated quiz questions and optional server-side answer
+# validation using the bundled curated quiz dataset.
 
 
 logger = logging.getLogger(__name__)
@@ -38,10 +32,13 @@ QUIZ_FILE = DATA_DIR / "french_quiz_data_aws.json"
 
 def _load_quiz_data() -> list[dict]:
     """
-    Loads quiz questions from the bundled JSON data file.
+    Load and validate quiz questions from the bundled JSON data file.
     """
     try:
-        with QUIZ_FILE.open("r", encoding="utf-8") as file:
+        with QUIZ_FILE.open(
+            "r",
+            encoding="utf-8",
+        ) as file:
             data = json.load(file)
 
     except (OSError, json.JSONDecodeError) as exc:
@@ -58,6 +55,46 @@ def _load_quiz_data() -> list[dict]:
             "Quiz data must contain a non-empty list of questions."
         )
 
+    for index, question in enumerate(data):
+        if not isinstance(question, dict):
+            raise RuntimeError(
+                f"Quiz entry {index} must be an object."
+            )
+
+        correct = question.get("correct")
+        options = question.get("options")
+        answer_index = question.get("answer_index")
+
+        if not isinstance(correct, str) or not correct.strip():
+            raise RuntimeError(
+                f"Quiz entry {index} has an invalid correct answer."
+            )
+
+        if (
+            not isinstance(options, list)
+            or len(options) < 2
+            or not all(
+                isinstance(option, str) and option.strip()
+                for option in options
+            )
+        ):
+            raise RuntimeError(
+                f"Quiz entry {index} has invalid options."
+            )
+
+        if (
+            not isinstance(answer_index, int)
+            or not 0 <= answer_index < len(options)
+        ):
+            raise RuntimeError(
+                f"Quiz entry {index} has an invalid answer_index."
+            )
+
+        if options[answer_index] != correct:
+            raise RuntimeError(
+                f"Quiz entry {index} has inconsistent answer data."
+            )
+
     return data
 
 
@@ -71,6 +108,7 @@ class QuizResponse(BaseModel):
     Request body schema for submitting a quiz answer.
     """
 
+    question_id: int
     selected_option: str
 
 
@@ -81,15 +119,22 @@ def get_quiz_question(
     user=Depends(get_current_user),
 ):
     """
-    Returns a randomly selected quiz question.
+    Return a randomly selected quiz question.
 
     Response:
-        - question: the correct French word (used for TTS playback)
-        - options: list of four possible answers
+        - question_id: server-side identifier for answer validation
+        - question: correct French word used for TTS playback
+        - options: list of possible answers
     """
-    question = random.choice(quiz_data)
+    question_id = random.randrange(
+        len(quiz_data)
+    )
+    question = quiz_data[
+        question_id
+    ]
 
     return {
+        "question_id": question_id,
         "question": question["correct"],
         "options": question["options"],
     }
@@ -103,14 +148,15 @@ def submit_quiz_answer(
     user=Depends(get_current_user),
 ):
     """
-    Validates the user's selected answer.
+    Validate a submitted answer against the exact question that was shown.
 
-    Logic:
-        - Looks through all quiz entries for one containing the submitted option
-        - Checks if it matches the correct answer
-        - Returns feedback on whether it was correct or not
+    Using a question identifier avoids the ambiguity of searching the entire
+    dataset for a matching option, since the same option text may appear in
+    more than one quiz question.
     """
-    selected_option = response.selected_option.strip()
+    selected_option = (
+        response.selected_option.strip()
+    )
 
     if not selected_option:
         raise HTTPException(
@@ -118,43 +164,28 @@ def submit_quiz_answer(
             detail="No option submitted.",
         )
 
-    for question in quiz_data:
-        options = question.get("options", [])
+    if not 0 <= response.question_id < len(quiz_data):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid question ID.",
+        )
 
-        if selected_option in options:
-            answer_index = question.get("answer_index")
+    question = quiz_data[
+        response.question_id
+    ]
+    options = question["options"]
+    answer_index = question["answer_index"]
+    correct_answer = options[
+        answer_index
+    ]
 
-            if not isinstance(answer_index, int):
-                logger.error(
-                    "Invalid answer index in quiz data."
-                )
-                raise HTTPException(
-                    status_code=500,
-                    detail="Quiz question is incorrectly configured.",
-                )
+    if selected_option not in options:
+        raise HTTPException(
+            status_code=400,
+            detail="Selected option does not belong to this question.",
+        )
 
-            try:
-                correct_answer = options[answer_index]
-
-            except IndexError:
-                logger.error(
-                    "Quiz answer index is out of range."
-                )
-                raise HTTPException(
-                    status_code=500,
-                    detail="Quiz question is incorrectly configured.",
-                ) from None
-
-            is_correct = (
-                selected_option == correct_answer
-            )
-
-            return {
-                "correct_answer": correct_answer,
-                "is_correct": is_correct,
-            }
-
-    raise HTTPException(
-        status_code=400,
-        detail="Invalid option submitted.",
-    )
+    return {
+        "correct_answer": correct_answer,
+        "is_correct": selected_option == correct_answer,
+    }

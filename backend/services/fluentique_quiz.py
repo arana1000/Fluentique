@@ -3,219 +3,216 @@
 import csv
 import json
 import logging
-import pickle
 import random
 import time
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
-import pandas as pd
-from deep_translator import GoogleTranslator
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 
+from backend.config import AWS_REGION
 from backend.utils.tts_utils import play_word_with_polly
 
 
 # fluentique_quiz.py
 # ----------------------
-# This file handles the logic for running quizzes within the app.
-# It includes functions for dynamically adjusting the quiz difficulty based on
-# the user’s performance and tracks quiz results. It also integrates with the backend
-# to fetch quiz data and display questions and answers to the user.
+# This file provides shared vocabulary-quiz helpers used by the Kivy frontend
+# and retains the original command-line listening quiz for manual use.
+#
+# The portfolio/runtime version no longer loads the experimental pickled
+# difficulty-prediction model. The CLI still adapts difficulty using learner
+# streaks, and its challenge round prioritises hard words the learner missed
+# during the current session.
 #
 # Functions:
-# - generate_quiz: Generates quiz questions based on the user's current skill level.
-# - validate_answer: Checks the user’s answer and adjusts the difficulty if needed.
-# - store_results: Saves quiz results and scores for progress tracking.
+# - get_word_info: Translates a French word and provides a simple definition.
+# - translate_word: Returns an English translation for quiz feedback.
+# - run_cli_quiz: Runs the standalone adaptive listening quiz.
 
 
 logger = logging.getLogger(__name__)
 
+translate_client = boto3.client(
+    "translate",
+    region_name=AWS_REGION,
+)
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# === Setup for log saving ===
-
+DATA_PATH = BASE_DIR / "data" / "french_quiz_data_aws.json"
 LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
+MAIN_QUIZ_LENGTH = 20
+CHALLENGE_LENGTH = 5
 
-# === Load pretrained ML model and encoders for difficulty prediction ===
-
-MODEL_PATH = BASE_DIR / "models" / "fluentique_predictor.pkl"
-
-try:
-    with MODEL_PATH.open("rb") as file:
-        model_data = pickle.load(file)
-except (OSError, pickle.UnpicklingError) as exc:
-    raise RuntimeError(
-        f"Unable to load quiz prediction model from {MODEL_PATH}."
-    ) from exc
-
-try:
-    predictor = model_data["model"]
-    le_level = model_data["le_level"]
-    le_correct = model_data["le_correct"]
-    le_selected = model_data["le_selected"]
-except KeyError as exc:
-    raise RuntimeError(
-        "Quiz prediction model file is missing required components."
-    ) from exc
+LEVELS = (
+    "easy",
+    "moderate",
+    "hard",
+)
 
 
 # === Load static French quiz dataset ===
 
-DATA_PATH = BASE_DIR / "data" / "french_quiz_data_aws.json"
+def _load_quiz_data() -> list[dict]:
+    """
+    Load and validate the curated French listening-quiz dataset.
+    """
+    try:
+        with DATA_PATH.open("r", encoding="utf-8") as file:
+            data = json.load(file)
 
-try:
-    with DATA_PATH.open("r", encoding="utf-8") as file:
-        quiz_data = json.load(file)
-except (OSError, json.JSONDecodeError) as exc:
-    raise RuntimeError(
-        f"Unable to load quiz data from {DATA_PATH}."
-    ) from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.exception(
+            "Failed to load quiz data from %s.",
+            DATA_PATH,
+        )
 
-if not isinstance(quiz_data, list) or not quiz_data:
-    raise RuntimeError(
-        "Quiz data must contain a non-empty list of questions."
-    )
+        raise RuntimeError(
+            f"Unable to load quiz data from {DATA_PATH}."
+        ) from exc
+
+    if not isinstance(data, list) or not data:
+        raise RuntimeError(
+            "Quiz data must contain a non-empty list of questions."
+        )
+
+    for index, question in enumerate(data):
+        if not isinstance(question, dict):
+            raise RuntimeError(
+                f"Quiz question at index {index} is invalid."
+            )
+
+        correct = question.get("correct")
+        options = question.get("options")
+        answer_index = question.get("answer_index")
+        level = question.get("level")
+
+        if (
+            not isinstance(correct, str)
+            or not correct.strip()
+            or not isinstance(options, list)
+            or not options
+            or not all(
+                isinstance(option, str) and option.strip()
+                for option in options
+            )
+            or not isinstance(answer_index, int)
+            or not 0 <= answer_index < len(options)
+            or options[answer_index] != correct
+            or level not in LEVELS
+        ):
+            raise RuntimeError(
+                f"Quiz question at index {index} is incorrectly configured."
+            )
+
+    return data
+
+
+quiz_data = _load_quiz_data()
 
 
 # === Organise questions by difficulty level ===
 
 by_level = {
-    "easy": [
+    level: [
         question
         for question in quiz_data
-        if question.get("level") == "easy"
-    ],
-    "moderate": [
-        question
-        for question in quiz_data
-        if question.get("level") == "moderate"
-    ],
-    "hard": [
-        question
-        for question in quiz_data
-        if question.get("level") == "hard"
-    ],
+        if question["level"] == level
+    ]
+    for level in LEVELS
 }
 
 
-# === Translation + definition utility for feedback ===
+# === Translation + definition utilities for feedback ===
+
+@lru_cache(maxsize=256)
+def translate_word(word: str) -> str:
+    """
+    Translate a French word to English for quiz feedback using Amazon Translate.
+
+    Successful lookups are cached for the current process so repeated quiz
+    feedback does not make unnecessary cloud requests.
+    """
+    text = word.strip()
+
+    if not text:
+        return "Translation unavailable"
+
+    try:
+        response = translate_client.translate_text(
+            Text=text,
+            SourceLanguageCode="fr",
+            TargetLanguageCode="en",
+        )
+
+        translated = response.get(
+            "TranslatedText",
+            "",
+        ).strip()
+
+        if not translated:
+            raise RuntimeError(
+                "Amazon Translate returned an empty translation."
+            )
+
+        return translated
+
+    except (BotoCoreError, ClientError, RuntimeError) as exc:
+        logger.warning(
+            "Unable to translate French quiz word %r: %s",
+            text,
+            exc,
+        )
+
+        return "Translation unavailable"
 
 def get_word_info(word: str) -> dict[str, str]:
     """
-    Translate a French word and generate a simple definition.
+    Translate a French word and provide a simple learner-friendly definition.
+
+    This helper is currently imported by the Kivy frontend.
     """
-    try:
-        translated = GoogleTranslator(
-            source="fr",
-            target="en",
-        ).translate(word)
+    text = word.strip()
 
-        definition = (
-            f"'{word}' is a French word meaning '{translated}'."
-        )
-
-        return {
-            "translation": translated,
-            "definition": definition,
-        }
-
-    except Exception:
-        logger.exception(
-            "Failed to retrieve word information for %s.",
-            word,
-        )
-
+    if not text:
         return {
             "translation": "Unavailable",
             "definition": "Definition unavailable",
         }
 
+    translated = translate_word(text)
 
-# === Fallback translator (was unused in updated logic) ===
+    if translated == "Translation unavailable":
+        return {
+            "translation": "Unavailable",
+            "definition": "Definition unavailable",
+        }
 
-def translate_word(word: str) -> str:
+    return {
+        "translation": translated,
+        "definition": (
+            f"'{text}' is a French word meaning '{translated}'."
+        ),
+    }
+
+
+# === CLI Helpers ===
+
+def _create_detailed_log() -> Path:
     """
-    Translate a French word to English for quiz feedback.
+    Create the detailed quiz CSV log if it does not already exist.
     """
-    try:
-        return GoogleTranslator(
-            source="fr",
-            target="en",
-        ).translate(word)
+    LOGS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    except Exception:
-        logger.exception(
-            "Failed to translate French word: %s",
-            word,
-        )
+    detailed_log_path = LOGS_DIR / "fluentique_detailed_log.csv"
 
-        return "Translation unavailable"
+    if detailed_log_path.exists():
+        return detailed_log_path
 
-
-# === Predict difficulty score using ML model based on learner features ===
-
-def predict_difficulty(
-    level: str,
-    correct_word: str,
-    selected_word: str = "",
-) -> float:
-    """
-    Predict quiz difficulty using the pretrained learner model.
-    """
-    try:
-        level_encoded = le_level.transform(
-            [level]
-        )[0]
-
-        correct_encoded = le_correct.transform(
-            [correct_word]
-        )[0]
-
-        selected_encoded = (
-            le_selected.transform([selected_word])[0]
-            if selected_word
-            else 0
-        )
-
-        # Fixed value retained from the original trained feature pipeline.
-        time_taken = 3.0
-
-        features = pd.DataFrame(
-            [
-                {
-                    "level_encoded": level_encoded,
-                    "correct_encoded": correct_encoded,
-                    "selected_encoded": selected_encoded,
-                    "time_taken": time_taken,
-                }
-            ]
-        )
-
-        prediction = predictor.predict_proba(
-            features
-        )[0][0]
-
-        return float(prediction)
-
-    except Exception:
-        logger.exception(
-            "Failed to predict difficulty for word %s.",
-            correct_word,
-        )
-
-        return 0.0
-
-
-# === Log setup for CSV-based score tracking ===
-
-detailed_log_path = (
-    LOGS_DIR / "fluentique_detailed_log.csv"
-)
-
-if not detailed_log_path.exists():
     try:
         with detailed_log_path.open(
             "w",
@@ -240,33 +237,178 @@ if not detailed_log_path.exists():
             f"Unable to create quiz log at {detailed_log_path}."
         ) from exc
 
-
-# === Global quiz state variables ===
-
-score = 0
-incorrect_words = []
-asked_questions = set()
-
-stage_progress = {
-    "easy": 0,
-    "moderate": 0,
-    "hard": 0,
-}
-
-current_level = "easy"
-question_count = 0
-correct_streak = 0
-incorrect_streak = 0
+    return detailed_log_path
 
 
-# === Start of CLI-based quiz interaction ===
+def _append_detailed_result(
+    log_path: Path,
+    question_number: int,
+    level: str,
+    correct_word: str,
+    selected_word: str,
+    is_correct: bool,
+    time_taken: float,
+) -> None:
+    """
+    Append one listening-quiz result to the detailed CSV log.
+    """
+    try:
+        with log_path.open(
+            "a",
+            newline="",
+            encoding="utf-8",
+        ) as file:
+            writer = csv.writer(file)
 
-if __name__ == "__main__":
-    print(" Welcome to Fluentique - French Listening Quiz!")
+            writer.writerow(
+                [
+                    question_number,
+                    level,
+                    correct_word,
+                    selected_word,
+                    int(is_correct),
+                    time_taken,
+                ]
+            )
 
-    # === Main Quiz: 20 Questions with Dynamic Level Switching ===
+    except OSError:
+        logger.exception(
+            "Failed to write quiz result to %s.",
+            log_path,
+        )
 
-    while question_count < 20:
+
+def _build_challenge_round(
+    incorrect_words: list[str],
+    asked_questions: set[str],
+) -> list[dict]:
+    """
+    Build a personalised hard-question challenge round.
+
+    Hard questions missed in the main quiz are prioritised. Remaining slots
+    are filled with unused hard questions, then other hard questions if needed.
+    """
+    hard_questions = list(by_level["hard"])
+
+    missed_hard = [
+        question
+        for question in hard_questions
+        if question["correct"] in incorrect_words
+    ]
+
+    random.shuffle(missed_hard)
+
+    challenge = missed_hard[:CHALLENGE_LENGTH]
+    selected_words = {
+        question["correct"]
+        for question in challenge
+    }
+
+    unused_hard = [
+        question
+        for question in hard_questions
+        if question["correct"] not in asked_questions
+        and question["correct"] not in selected_words
+    ]
+
+    random.shuffle(unused_hard)
+
+    for question in unused_hard:
+        if len(challenge) >= CHALLENGE_LENGTH:
+            break
+
+        challenge.append(question)
+        selected_words.add(question["correct"])
+
+    if len(challenge) < CHALLENGE_LENGTH:
+        remaining_hard = [
+            question
+            for question in hard_questions
+            if question["correct"] not in selected_words
+        ]
+
+        random.shuffle(remaining_hard)
+
+        for question in remaining_hard:
+            if len(challenge) >= CHALLENGE_LENGTH:
+                break
+
+            challenge.append(question)
+            selected_words.add(question["correct"])
+
+    return challenge
+
+
+def _save_score_log(
+    score: int,
+    main_questions_answered: int,
+    challenge_score: int,
+    challenge_questions_answered: int,
+    incorrect_words: list[str],
+) -> None:
+    """
+    Save a concise summary of the completed CLI quiz.
+    """
+    LOGS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    score_log_path = LOGS_DIR / "fluentique_score_log.txt"
+
+    try:
+        with score_log_path.open(
+            "a",
+            encoding="utf-8",
+        ) as log_file:
+            log_file.write(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                f"- Main score: {score}/{main_questions_answered}; "
+                f"Challenge: {challenge_score}/"
+                f"{challenge_questions_answered}\n"
+            )
+
+            if incorrect_words:
+                log_file.write(
+                    "Incorrect words: "
+                    + ", ".join(incorrect_words)
+                    + "\n"
+                )
+
+            log_file.write("\n")
+
+    except OSError:
+        logger.exception(
+            "Failed to save quiz score log."
+        )
+
+
+# === Standalone CLI Quiz ===
+
+def run_cli_quiz() -> None:
+    """
+    Run the original standalone French listening quiz.
+
+    Difficulty moves up after five consecutive correct answers and down after
+    three consecutive incorrect answers. The challenge round uses hard
+    questions and prioritises hard words missed during the main quiz.
+    """
+    detailed_log_path = _create_detailed_log()
+
+    score = 0
+    incorrect_words: list[str] = []
+    asked_questions: set[str] = set()
+
+    current_level = "easy"
+    question_count = 0
+    correct_streak = 0
+    incorrect_streak = 0
+
+    print("Welcome to Fluentique - French Listening Quiz!")
+
+    # === Main Quiz: Adaptive Level Switching ===
+
+    while question_count < MAIN_QUIZ_LENGTH:
         available_questions = [
             question
             for question in by_level[current_level]
@@ -298,7 +440,7 @@ if __name__ == "__main__":
 
         play_word_with_polly(
             correct_word
-        )  # TTS output
+        )
 
         for index, option in enumerate(
             options,
@@ -327,7 +469,7 @@ if __name__ == "__main__":
 
             except ValueError:
                 print(
-                    "Invalid input - type 1, 2, 3, 4 "
+                    "Invalid input - type a valid option number "
                     "or 'r' to replay."
                 )
                 continue
@@ -339,42 +481,26 @@ if __name__ == "__main__":
                 )
                 continue
 
-            end_time = time.time()
-
             time_taken = round(
-                end_time - start_time,
+                time.time() - start_time,
                 2,
             )
 
             selected_word = options[choice]
-
-            is_correct = (
-                1
-                if choice == correct_index
-                else 0
-            )
+            is_correct = choice == correct_index
 
             if is_correct:
                 print("Correct!")
 
-                info = get_word_info(
-                    correct_word
-                )
-
-                print(
-                    "\nWord Info:\n"
-                    f"- Definition: {info['definition']}"
-                )
-
                 score += 1
                 correct_streak += 1
                 incorrect_streak = 0
-                stage_progress[current_level] += 1
 
             else:
+                print("Incorrect!")
+
                 correct_streak = 0
                 incorrect_streak += 1
-
                 incorrect_words.append(
                     correct_word
                 )
@@ -387,52 +513,34 @@ if __name__ == "__main__":
                     selected_word
                 )
 
-                print("Incorrect!")
-
                 print(
                     f"'{correct_word}' means: "
                     f"{correct_meaning}"
                 )
 
                 print(
-                    f"You chose '{selected_word}' "
+                    f"You chose '{selected_word}', "
                     f"which means: {selected_meaning}"
                 )
 
-                info = get_word_info(
-                    correct_word
-                )
+            info = get_word_info(
+                correct_word
+            )
 
-                print(
-                    "\nWord Info:\n"
-                    f"- Definition: {info['definition']}"
-                )
+            print(
+                "\nWord Info:\n"
+                f"- Definition: {info['definition']}"
+            )
 
-            # Save result to CSV log
-            try:
-                with detailed_log_path.open(
-                    "a",
-                    newline="",
-                    encoding="utf-8",
-                ) as file:
-                    writer = csv.writer(file)
-
-                    writer.writerow(
-                        [
-                            question_count + 1,
-                            current_level,
-                            correct_word,
-                            selected_word,
-                            is_correct,
-                            time_taken,
-                        ]
-                    )
-
-            except OSError:
-                logger.exception(
-                    "Failed to write quiz result to %s.",
-                    detailed_log_path,
-                )
+            _append_detailed_result(
+                detailed_log_path,
+                question_count + 1,
+                current_level,
+                correct_word,
+                selected_word,
+                is_correct,
+                time_taken,
+            )
 
             break
 
@@ -474,37 +582,21 @@ if __name__ == "__main__":
 
             incorrect_streak = 0
 
-
-    # === Challenge Round with ML-based hard word prediction ===
+    # === Personalised Challenge Round ===
 
     print(
         "\nCreating your personalised challenge round..."
     )
 
-    challenge_pool = []
+    challenge_questions = _build_challenge_round(
+        incorrect_words,
+        asked_questions,
+    )
 
-    for question in quiz_data:
-        if question["level"] == "hard":
-            score_estimate = predict_difficulty(
-                question["level"],
-                question["correct"],
-            )
+    challenge_score = 0
 
-            challenge_pool.append(
-                (
-                    question,
-                    score_estimate,
-                )
-            )
-
-    challenge_pool = sorted(
-        challenge_pool,
-        key=lambda item: item[1],
-        reverse=True,
-    )[:5]
-
-    for index, (question, _) in enumerate(
-        challenge_pool,
+    for index, question in enumerate(
+        challenge_questions,
         start=1,
     ):
         print(
@@ -515,25 +607,28 @@ if __name__ == "__main__":
         options = question["options"]
         answer_index = question["answer_index"]
 
-        while True:
-            play_word_with_polly(
-                correct_word
+        play_word_with_polly(
+            correct_word
+        )
+
+        for option_index, option in enumerate(
+            options,
+            start=1,
+        ):
+            print(
+                f"{option_index}. {option}"
             )
 
-            for option_index, option in enumerate(
-                options,
-                start=1,
-            ):
-                print(
-                    f"{option_index}. {option}"
-                )
-
+        while True:
             user_input = input(
                 "What word did you hear? "
                 "(1-4 or 'r' to replay): "
             ).strip().lower()
 
             if user_input == "r":
+                play_word_with_polly(
+                    correct_word
+                )
                 continue
 
             try:
@@ -554,46 +649,42 @@ if __name__ == "__main__":
                 continue
 
             if user_choice == answer_index:
-                print(" Correct!")
-
-                info = get_word_info(
-                    correct_word
-                )
-
-                print(
-                    "\nWord Info:\n"
-                    f"- Definition: {info['definition']}"
-                )
+                print("Correct!")
+                challenge_score += 1
 
             else:
                 print(
-                    " Incorrect. The correct answer was: "
+                    "Incorrect. The correct answer was: "
                     f"{correct_word}"
                 )
 
-                info = get_word_info(
-                    correct_word
-                )
+            info = get_word_info(
+                correct_word
+            )
 
-                print(
-                    "\nWord Info:\n"
-                    f"- Definition: {info['definition']}"
-                )
+            print(
+                "\nWord Info:\n"
+                f"- Definition: {info['definition']}"
+            )
 
             break
 
-
     # === Final Summary and Log ===
 
-    print("\n Quiz Complete!")
+    challenge_count = len(challenge_questions)
+    total_score = score + challenge_score
+    total_questions = question_count + challenge_count
+
+    print("\nQuiz Complete!")
     print(
-        f"Main Quiz Score: {score}/20"
+        f"Main Quiz Score: {score}/{question_count}"
     )
     print(
-        "Challenge Round Bonus: 5/5"
+        f"Challenge Round: "
+        f"{challenge_score}/{challenge_count}"
     )
     print(
-        "Total Score: 25/25"
+        f"Total Score: {total_score}/{total_questions}"
     )
 
     if incorrect_words:
@@ -608,33 +699,17 @@ if __name__ == "__main__":
 
     else:
         print(
-            " You got everything correct! Well done!"
+            "You got everything correct! Well done!"
         )
 
-    score_log_path = (
-        LOGS_DIR / "fluentique_score_log.txt"
+    _save_score_log(
+        score,
+        question_count,
+        challenge_score,
+        challenge_count,
+        incorrect_words,
     )
 
-    try:
-        with score_log_path.open(
-            "a",
-            encoding="utf-8",
-        ) as log_file:
-            log_file.write(
-                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                f"- Score: {score}/20\n"
-            )
 
-            if incorrect_words:
-                log_file.write(
-                    "Incorrect words: "
-                    + ", ".join(incorrect_words)
-                    + "\n"
-                )
-
-            log_file.write("\n")
-
-    except OSError:
-        logger.exception(
-            "Failed to save quiz score log."
-        )
+if __name__ == "__main__":
+    run_cli_quiz()

@@ -3,17 +3,22 @@ import logging
 import random
 from pathlib import Path
 
+from backend.services.grammar_feedback import generate_feedback
+
 
 # grammar_exercise_session.py
 # ----------------------
 # This file manages the session lifecycle for grammar exercises.
-# It handles the initialization of grammar practice sessions, tracking progress
-# through various exercises, and providing feedback after each user input.
+# It loads curated translation exercises, creates short practice sessions,
+# tracks progress through each session, and stores feedback for each answer.
+#
+# The exercise content remains local and curated. OpenAI is used only to
+# generate useful feedback when a learner submits an incorrect sentence.
 #
 # Functions:
-# - start_session: Initializes a new grammar exercise session for the user.
-# - track_progress: Tracks user progress through exercises.
-# - provide_feedback: Gives feedback on the grammar exercise result.
+# - get_new_exercise: Creates or resumes a grammar exercise session.
+# - submit_translation: Validates an answer, generates feedback, and advances
+#   the session.
 
 
 logger = logging.getLogger(__name__)
@@ -26,126 +31,318 @@ SESSION_LENGTH = 5
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 EXERCISE_FILE = DATA_DIR / "beginner_translation_exercises.json"
 
-try:
-    exercise_data = json.loads(
-        EXERCISE_FILE.read_text(encoding="utf-8")
-    )
-except (OSError, json.JSONDecodeError) as exc:
-    raise RuntimeError(
-        f"Unable to load grammar exercises from {EXERCISE_FILE}."
-    ) from exc
 
-if not isinstance(exercise_data, list) or len(exercise_data) < SESSION_LENGTH:
-    raise RuntimeError(
-        f"Grammar exercise data must contain at least {SESSION_LENGTH} exercises."
-    )
+def _load_exercise_data() -> list[dict]:
+    """
+    Load and validate the curated grammar exercise dataset.
+    """
+    try:
+        data = json.loads(
+            EXERCISE_FILE.read_text(
+                encoding="utf-8"
+            )
+        )
+
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.exception(
+            "Failed to load grammar exercises from %s.",
+            EXERCISE_FILE,
+        )
+
+        raise RuntimeError(
+            f"Unable to load grammar exercises from {EXERCISE_FILE}."
+        ) from exc
+
+    if not isinstance(data, list) or len(data) < SESSION_LENGTH:
+        raise RuntimeError(
+            f"Grammar exercise data must contain at least "
+            f"{SESSION_LENGTH} exercises."
+        )
+
+    for index, exercise in enumerate(data):
+        if (
+            not isinstance(exercise, dict)
+            or not isinstance(exercise.get("english"), str)
+            or not exercise["english"].strip()
+            or not isinstance(exercise.get("french"), str)
+            or not exercise["french"].strip()
+        ):
+            raise RuntimeError(
+                f"Grammar exercise at index {index} is invalid."
+            )
+
+    return data
 
 
-# === Temporary user session store (can be replaced with database) ===
+exercise_data = _load_exercise_data()
 
+
+# === Temporary User Session Store ===
+
+# Sessions are intentionally kept in memory for the current desktop
+# application. A persistent/shared store would be needed if the backend were
+# later deployed across multiple server processes or instances.
 user_sessions: dict[str, dict] = {}
 
 
-# === Fetch a new translation exercise for a user ===
+# === Session Helpers ===
 
-def get_new_exercise(username: str) -> dict:
+def _normalise_sentence(text: str) -> str:
     """
-    Returns the current exercise for a user, creating a new session if needed.
+    Normalise surrounding/repeated whitespace and letter case for comparison.
     """
-    session = user_sessions.get(username)
+    return " ".join(
+        text.strip().split()
+    ).casefold()
+
+
+def _get_session_exercise(
+    session: dict,
+) -> tuple[int, dict]:
+    """
+    Resolve the session's current position to its selected exercise.
+    """
+    current_position = session.get(
+        "current"
+    )
+    indices = session.get(
+        "indices"
+    )
+    responses = session.get(
+        "responses"
+    )
+
+    if (
+        not isinstance(current_position, int)
+        or not isinstance(indices, list)
+        or not isinstance(responses, list)
+        or current_position < 0
+        or current_position >= len(indices)
+    ):
+        raise ValueError(
+            "Grammar exercise session is invalid."
+        )
+
+    exercise_index = indices[
+        current_position
+    ]
+
+    if (
+        not isinstance(exercise_index, int)
+        or exercise_index < 0
+        or exercise_index >= len(exercise_data)
+    ):
+        raise ValueError(
+            "Grammar exercise session references invalid exercise data."
+        )
+
+    return (
+        exercise_index,
+        exercise_data[exercise_index],
+    )
+
+
+# === Fetch a New Translation Exercise for a User ===
+
+def get_new_exercise(
+    user_id: str,
+) -> dict:
+    """
+    Return the current exercise for a user, creating a new session if needed.
+
+    The French sentence is intentionally returned because the current Kivy
+    frontend uses it to construct and shuffle the sentence-building word tiles.
+    """
+    session = user_sessions.get(
+        user_id
+    )
 
     if not session:
-        # Pick 5 unique random exercises per session
+        # Pick unique random exercises for this session.
         selected = random.sample(
             range(len(exercise_data)),
             SESSION_LENGTH,
         )
 
-        user_sessions[username] = {
+        session = {
             "indices": selected,
             "current": 0,
             "responses": [],
         }
 
-        session = user_sessions[username]
+        user_sessions[user_id] = session
 
-    index = session["indices"][session["current"]]
+    try:
+        exercise_index, exercise = _get_session_exercise(
+            session
+        )
+
+    except ValueError as exc:
+        logger.exception(
+            "Invalid grammar session for user %s.",
+            user_id,
+        )
+
+        # Remove corrupted session state so the next request can start fresh.
+        user_sessions.pop(
+            user_id,
+            None,
+        )
+
+        raise RuntimeError(
+            "Grammar exercise session is invalid."
+        ) from exc
 
     return {
-        "index": index,
-        "english": exercise_data[index]["english"],
-        "french": exercise_data[index]["french"],
+        "index": exercise_index,
+        "english": exercise["english"],
+        "french": exercise["french"],
     }
 
 
-# === Submit a user's translated sentence and return feedback ===
+# === Submit a User's Translation and Return Feedback ===
 
 def submit_translation(
-    username: str,
+    user_id: str,
     user_input: str,
 ) -> dict:
     """
-    Records a grammar exercise answer and advances the user's session.
+    Record a grammar exercise answer, generate feedback, and advance the session.
     """
-    session = user_sessions.get(username)
+    session = user_sessions.get(
+        user_id
+    )
 
     if not session:
-        return {
-            "message": "No active session.",
-        }
+        raise ValueError(
+            "No active grammar exercise session."
+        )
 
-    current_position = session["current"]
-    exercise_index = session["indices"][current_position]
-    correct_french = exercise_data[exercise_index]["french"]
+    submitted_text = user_input.strip()
+
+    if not submitted_text:
+        raise ValueError(
+            "No answer submitted."
+        )
+
+    try:
+        exercise_index, exercise = _get_session_exercise(
+            session
+        )
+
+    except ValueError as exc:
+        logger.exception(
+            "Invalid grammar session while submitting for user %s.",
+            user_id,
+        )
+
+        user_sessions.pop(
+            user_id,
+            None,
+        )
+
+        raise ValueError(
+            "Grammar exercise session is invalid."
+        ) from exc
+
+    correct_french = exercise[
+        "french"
+    ]
 
     logger.debug(
         "Submitting grammar exercise %s for user %s.",
         exercise_index,
-        username,
+        user_id,
     )
 
-    # Basic string comparison
     is_correct = (
-        user_input.strip().lower()
-        == correct_french.strip().lower()
+        _normalise_sentence(
+            submitted_text
+        )
+        == _normalise_sentence(
+            correct_french
+        )
     )
 
-    # Placeholder feedback
     if is_correct:
-        explanation = "No mistakes - well done!"
-    else:
-        explanation = "Sentence did not match exactly."
+        explanation = (
+            "No mistakes - well done!"
+        )
 
-    # Record the result
+    else:
+        # Compare the learner's attempt with the curated target sentence and
+        # provide a concise explanation through the OpenAI-backed feedback
+        # service.
+        explanation = generate_feedback(
+            original=submitted_text,
+            corrected=correct_french,
+        )
+
+    # Record the result.
     session["responses"].append(
         {
-            "prompt": exercise_data[exercise_index]["english"],
+            "prompt": exercise["english"],
             "expected": correct_french,
-            "user": user_input,
+            "user": submitted_text,
             "correct": is_correct,
             "feedback": explanation,
         }
     )
 
-    # Move to next question
+    # Move to the next question.
     session["current"] += 1
 
-    # If session is complete (5 questions), return results and end session
-    if session["current"] >= SESSION_LENGTH:
-        results = session["responses"]
+    session_length = len(
+        session["indices"]
+    )
 
-        del user_sessions[username]  # Session cleanup
+    # If the session is complete, return results and remove session state.
+    if session["current"] >= session_length:
+        results = list(
+            session["responses"]
+        )
+
+        user_sessions.pop(
+            user_id,
+            None,
+        )
 
         return {
-            "message": "Completed 5 exercises.",
+            "message": (
+                f"Completed {session_length} exercises."
+            ),
             "results": results,
         }
 
-    # Otherwise, return the next prompt
-    next_index = session["indices"][session["current"]]
+    # Otherwise, return the next prompt and the accumulated responses.
+    try:
+        _, next_exercise = _get_session_exercise(
+            session
+        )
+
+    except ValueError as exc:
+        logger.exception(
+            "Invalid next grammar exercise for user %s.",
+            user_id,
+        )
+
+        responses = list(
+            session["responses"]
+        )
+
+        user_sessions.pop(
+            user_id,
+            None,
+        )
+
+        raise ValueError(
+            "Grammar exercise session became invalid."
+        ) from exc
 
     return {
         "message": "Answer submitted.",
-        "next": exercise_data[next_index]["english"],
-        "responses": session["responses"],
+        "next": next_exercise["english"],
+        "responses": list(
+            session["responses"]
+        ),
     }

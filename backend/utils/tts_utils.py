@@ -1,177 +1,171 @@
 import logging
-import os
-import uuid
-from urllib.parse import quote
+import threading
+from xml.sax.saxutils import escape
 
-import firebase_admin
-from firebase_admin import App, credentials, firestore, storage
+import boto3
+import numpy as np
+import sounddevice as sd
 
-from backend.config import FIREBASE_CREDENTIALS
+from backend.config import (
+    AWS_REGION,
+    POLLY_LANGUAGE_CODE,
+    POLLY_VOICE_ID,
+)
+
+
+# tts_utils.py
+# ----------------------
+# Shared Amazon Polly text-to-speech helper used by Fluentique.
+#
+# AWS credentials are intentionally not stored in the project. Boto3 uses its
+# normal credential chain, while region, voice, and language settings come
+# from backend.config.
+#
+# Polly returns raw PCM audio here, which is played through SoundDevice.
+# Short vocabulary words are spoken slightly more slowly and padded with
+# silence so Windows audio-device startup does not clip the first or last
+# phoneme.
 
 
 logger = logging.getLogger(__name__)
 
-FIREBASE_STORAGE_BUCKET = os.getenv(
-    "FIREBASE_STORAGE_BUCKET",
-    "fluentiqueapp.firebasestorage.app",
+
+# === Amazon Polly Client ===
+
+polly = boto3.client(
+    "polly",
+    region_name=AWS_REGION,
 )
 
+POLLY_SAMPLE_RATE = 16000
+POLLY_SPEECH_RATE = "85%"
+LEAD_IN_MS = 250
+TAIL_MS = 400
 
-def _initialise_firebase() -> App:
+# Prevent overlapping replay requests from fighting over the audio device.
+_playback_lock = threading.Lock()
+
+
+def _silence(duration_ms: int) -> np.ndarray:
     """
-    Return the existing Firebase app or initialise it if required.
+    Return signed 16-bit mono silence for the configured Polly sample rate.
     """
+    sample_count = int(
+        POLLY_SAMPLE_RATE * duration_ms / 1000
+    )
+
+    return np.zeros(
+        sample_count,
+        dtype=np.int16,
+    )
+
+
+def play_word_with_polly(word: str) -> bool:
+    """
+    Synthesise and play a French word or short phrase using Amazon Polly.
+
+    Short vocabulary items are deliberately spoken at 85% speed. A short
+    silence buffer is also added before and after the generated PCM audio to
+    prevent audio-device startup/shutdown from clipping word boundaries.
+
+    Args:
+        word (str): French text to speak.
+
+    Returns:
+        bool: True if playback completed successfully, otherwise False.
+    """
+    text = word.strip()
+
+    if not text:
+        logger.warning(
+            "Polly playback requested with empty text."
+        )
+        return False
+
+    if not _playback_lock.acquire(blocking=False):
+        logger.debug(
+            "Ignoring Polly replay while audio is already playing."
+        )
+        return False
+
+    audio_stream = None
+
     try:
-        return firebase_admin.get_app()
-    except ValueError:
-        credential = credentials.Certificate(FIREBASE_CREDENTIALS)
-
-        return firebase_admin.initialize_app(
-            credential,
-            {
-                "storageBucket": FIREBASE_STORAGE_BUCKET,
-            },
+        ssml_text = (
+            "<speak>"
+            f"<prosody rate=\"{POLLY_SPEECH_RATE}\">"
+            f"{escape(text)}"
+            "</prosody>"
+            "</speak>"
         )
 
-
-# Initialise Firebase once and create reusable clients.
-firebase_app = _initialise_firebase()
-db = firestore.client(app=firebase_app)
-bucket = storage.bucket(app=firebase_app)
-
-
-def update_user_data(
-    uid: str,
-    email: str,
-    xp: int,
-    league: str,
-    profile_picture_url: str = "",
-) -> None:
-    """
-    Create or update a user's Firestore document.
-
-    Existing fields not included in this update are preserved.
-    """
-    try:
-        user_ref = db.collection("users").document(uid)
-
-        user_ref.set(
-            {
-                "uid": uid,
-                "email": email,
-                "xp": xp,
-                "league": league,
-                "profile_picture_url": profile_picture_url,
-            },
-            merge=True,
+        response = polly.synthesize_speech(
+            Text=ssml_text,
+            TextType="ssml",
+            OutputFormat="pcm",
+            SampleRate=str(POLLY_SAMPLE_RATE),
+            VoiceId=POLLY_VOICE_ID,
+            LanguageCode=POLLY_LANGUAGE_CODE,
         )
+
+        audio_stream = response.get(
+            "AudioStream"
+        )
+
+        if audio_stream is None:
+            raise RuntimeError(
+                "Amazon Polly returned no audio stream."
+            )
+
+        audio_bytes = audio_stream.read()
+
+        if not audio_bytes:
+            raise RuntimeError(
+                "Amazon Polly returned empty audio."
+            )
+
+        speech_samples = np.frombuffer(
+            audio_bytes,
+            dtype=np.int16,
+        )
+
+        playback_samples = np.concatenate(
+            (
+                _silence(LEAD_IN_MS),
+                speech_samples,
+                _silence(TAIL_MS),
+            )
+        )
+
+        sd.play(
+            playback_samples,
+            samplerate=POLLY_SAMPLE_RATE,
+            blocking=True,
+        )
+
+        return True
 
     except Exception:
         logger.exception(
-            "Failed to update Firebase data for user %s.",
-            uid,
+            "Amazon Polly playback failed for text: %r",
+            text,
         )
 
+        try:
+            sd.stop()
+        except Exception:
+            pass
 
-def get_all_users() -> list[dict]:
-    """
-    Retrieve all user documents.
+        return False
 
-    Used by the Fluentique leaderboard.
-    """
-    try:
-        users_ref = db.collection("users")
-        return [doc.to_dict() for doc in users_ref.stream()]
+    finally:
+        if audio_stream is not None:
+            try:
+                audio_stream.close()
+            except Exception:
+                logger.debug(
+                    "Failed to close Polly audio stream.",
+                    exc_info=True,
+                )
 
-    except Exception:
-        logger.exception("Failed to retrieve users from Firestore.")
-        return []
-
-
-def upload_profile_image(uid: str, file_path: str) -> str | None:
-    """
-    Upload a profile image to Firebase Storage.
-
-    Returns the Firebase download URL on success or None on failure.
-    """
-    try:
-        filename = f"profile_pictures/{uid}/{uuid.uuid4()}.jpg"
-
-        blob = bucket.blob(filename)
-        blob.upload_from_filename(file_path)
-
-        token = str(uuid.uuid4())
-
-        blob.metadata = {
-            "firebaseStorageDownloadTokens": token,
-        }
-        blob.patch()
-
-        encoded_filename = quote(filename, safe="")
-
-        return (
-            "https://firebasestorage.googleapis.com/v0/b/"
-            f"{bucket.name}/o/{encoded_filename}"
-            f"?alt=media&token={token}"
-        )
-
-    except Exception:
-        logger.exception(
-            "Failed to upload profile image for user %s.",
-            uid,
-        )
-        return None
-
-
-def update_profile_picture_url(uid: str, url: str) -> None:
-    """
-    Update a user's profile picture URL in Firestore.
-    """
-    try:
-        user_ref = db.collection("users").document(uid)
-        user_ref.update({"profile_picture_url": url})
-
-    except Exception:
-        logger.exception(
-            "Failed to update profile picture URL for user %s.",
-            uid,
-        )
-
-
-def update_username(uid: str, username: str) -> None:
-    """
-    Update a user's username in Firestore.
-    """
-    try:
-        user_ref = db.collection("users").document(uid)
-        user_ref.update({"username": username})
-
-    except Exception:
-        logger.exception(
-            "Failed to update username for user %s.",
-            uid,
-        )
-
-
-def get_user_data(uid: str) -> dict | None:
-    """
-    Retrieve a user's Firestore document.
-
-    Returns the user's data or None if the document does not exist
-    or cannot be retrieved.
-    """
-    try:
-        user_ref = db.collection("users").document(uid)
-        doc = user_ref.get()
-
-        if not doc.exists:
-            return None
-
-        return doc.to_dict()
-
-    except Exception:
-        logger.exception(
-            "Failed to retrieve Firebase data for user %s.",
-            uid,
-        )
-        return None
+        _playback_lock.release()

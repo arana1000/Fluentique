@@ -17,30 +17,20 @@ Modules covered:
 import os
 import sys
 import json
-import pickle
 import threading
 import tempfile
-import io
 from pathlib import Path
 from datetime import datetime
 from random import shuffle, randint
-from collections import defaultdict, Counter
 import urllib.request
 
 # Ensure backend module imports work when running from the 'app/' directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # === Third-Party Libraries ===
-import pandas as pd
 import requests
-import torch
-import librosa
 import sounddevice as sd
 import soundfile as sf
-import scipy.io.wavfile as wavfile
-import matplotlib.pyplot as plt
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
-import google.cloud.speech as speech
 from plyer import filechooser
 
 # === Kivy Core ===
@@ -77,7 +67,6 @@ from backend.utils.firebase_utils import (
     get_all_users, upload_profile_image, update_profile_picture_url
 )
 from backend.utils.auth_utils import verify_token
-from backend.config import GOOGLE_CREDS_PATH
 
 
 # main_kivy.py
@@ -110,6 +99,22 @@ API_BASE_URL = os.getenv(
 
 REQUEST_TIMEOUT = 15
 
+
+def get_api_error_message(response, fallback="Request failed"):
+    """Return a user-friendly FastAPI error message when available."""
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = {}
+
+    if isinstance(payload, dict):
+        detail = payload.get("detail") or payload.get("error")
+        if isinstance(detail, str) and detail.strip():
+            return detail.strip()
+
+    return f"{fallback} (HTTP {response.status_code})"
+
+
 # Global instance of ProgressManager for handling XP, levels, and streaks
 progress_manager = ProgressManager()
 
@@ -122,8 +127,14 @@ def speak_word_threaded(word):
     ).start()
 
 # Register custom fonts for consistent visual branding
-LabelBase.register(name="ProximaSoft", fn_regular="assets/ProximaSoft-Regular.ttf")
-LabelBase.register(name="ProximaSoft-Bold", fn_regular="assets/ProximaSoft-Bold.ttf")
+LabelBase.register(
+    name="ProximaSoft",
+    fn_regular=str(ASSETS_DIR / "ProximaSoft-Regular.ttf"),
+)
+LabelBase.register(
+    name="ProximaSoft-Bold",
+    fn_regular=str(ASSETS_DIR / "ProximaSoft-Bold.ttf"),
+)
 
 # Set default window size (mobile simulation: 360x740)
 Window.size = (360, 740)
@@ -201,7 +212,7 @@ class LeaderboardScreen(Screen):
             name_label = Label(
                 text=f"[b]{i}. {display_name}[/b]\n{league}",
                 markup=True,  # Enable bold tags
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size='16sp',
                 halign='left',
                 valign='middle',
@@ -213,7 +224,7 @@ class LeaderboardScreen(Screen):
             # Create XP label aligned right
             xp_label = Label(
                 text=f"{xp} pts",
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size='16sp',
                 halign='right',
                 valign='middle',
@@ -223,7 +234,7 @@ class LeaderboardScreen(Screen):
             xp_label.bind(size=xp_label.setter('text_size'))
 
             # Profile image: fallback to default if none is set
-            avatar_source = profile_pic_url if profile_pic_url else 'assets/default_avatar.png'
+            avatar_source = profile_pic_url if profile_pic_url else str(ASSETS_DIR / "default_avatar.png")
             avatar = RoundedAsyncImage(
                 source=avatar_source,
                 size=(dp(40), dp(40))
@@ -459,7 +470,7 @@ class ProfileScreen(Screen):
         # Clear profile fields in the UI
         self.ids.username_input.text = ""
         self.ids.email_input.text = ""
-        self.ids.profile_image.source = "assets/default_avatar.png"
+        self.ids.profile_image.source = str(ASSETS_DIR / "default_avatar.png")
 
         # Go back to the login screen
         app.root.current = "login"
@@ -789,15 +800,6 @@ class QuizScreen(Screen):
         self.challenge_questions = []
         self.challenge_index = 0
 
-        # === Load the challenge round prediction model ===
-        MODEL_PATH = Path(__file__).resolve().parent.parent / "backend" / "models" / "fluentique_predictor.pkl"
-        with open(MODEL_PATH, "rb") as f:
-            model_data = pickle.load(f)
-
-        self.predictor = model_data["model"]
-        self.le_level = model_data["le_level"]
-        self.le_correct = model_data["le_correct"]
-        self.le_selected = model_data["le_selected"]
 
     def show_popup(self, title, message):
         """
@@ -854,16 +856,20 @@ class QuizScreen(Screen):
         self.ids.definition_box.clear_widgets()
         self.ids.feedback_bar.canvas.before.clear()
 
+        # Reset selection state so a previous answer cannot carry over.
+        self.selected_option = 0
+
         # Reset all option buttons
         for i in range(1, 5):
             btn = self.ids[f'option{i}']
             btn.background_color = (246/255, 247/255, 255/255, 1)
             btn.text = options[i-1]
 
-        # Speak the correct word aloud using Amazon Polly
+        # Speak the correct word aloud using Amazon Polly.
+        # Network/audio work stays off the Kivy UI thread.
         Clock.schedule_once(
             lambda dt: speak_word_threaded(self.correct_answer),
-            0.2,
+            0.5,
         )
 
     def select_option(self, option_num):
@@ -874,9 +880,14 @@ class QuizScreen(Screen):
             option_num (int): The button number clicked by the user (1–4).
         """
         self.selected_option = option_num
+
         for i in range(1, 5):
             btn = self.ids[f'option{i}']
-            btn.background_color = (0.7, 0.6, 0.9, 1) if i == option_num else (246/255, 247/255, 255/255, 1)
+            btn.background_color = (
+                (0.7, 0.6, 0.9, 1)
+                if i == option_num
+                else (246/255, 247/255, 255/255, 1)
+            )
 
     def submit_answer(self):
         """
@@ -884,15 +895,19 @@ class QuizScreen(Screen):
         Updates the user's score and progresses to the next question.
         """
 
-        # Prevent submission without selecting an option
+        # Prevent submission without selecting an option.
         if self.selected_option == 0:
-            self.show_popup("Select an option", "Please select an answer before submitting.")
+            self.show_popup(
+                "Select an option",
+                "Please select an answer before submitting.",
+            )
             return
 
         selected_text = self.ids[f'option{self.selected_option}'].text
-        correct = selected_text == self.correct_answer
+        correct_answer = self.correct_answer
+        correct = selected_text == correct_answer
 
-        # Setup feedback bar
+        # Setup feedback bar.
         feedback_bar = self.ids.feedback_bar
         feedback_bar.clear_widgets()
         feedback_bar.height = dp(80)
@@ -902,36 +917,18 @@ class QuizScreen(Screen):
             Color(0, 1, 0, 0.3) if correct else Color(1, 0, 0, 0.3)
             Rectangle(pos=feedback_bar.pos, size=feedback_bar.size)
 
-        # Text feedback: Good Job or Poor Job
         feedback_bar.add_widget(Label(
-            text="Good Job!" if correct else f"Poor Job! Correct: {self.correct_answer}",
+            text=(
+                "Good Job!"
+                if correct
+                else f"Poor Job! Correct: {correct_answer}"
+            ),
             color=(0, 1, 0, 1) if correct else (1, 0, 0, 1),
-            font_name="assets/ProximaSoft-Bold",
-            halign='center'
+            font_name="ProximaSoft-Bold",
+            halign="center",
         ))
 
-        # === Show Definitions ===
-        definition_box = self.ids.definition_box
-        definition_box.clear_widgets()
-
-        if correct:
-            correct_info = get_word_info(self.correct_answer)
-            definition_box.add_widget(Label(
-                text=f"{correct_info['definition']}",
-                color=(0, 0, 0, 1),
-                font_name="assets/ProximaSoft-Regular",
-                halign='center'
-            ))
-        else:
-            correct_info = get_word_info(self.correct_answer)
-            selected_info = get_word_info(selected_text)
-            definition_box.add_widget(Label(
-                text=f"'{self.correct_answer}' means: {correct_info['translation']}\n"
-                     f"You chose '{selected_text}' which means: {selected_info['translation']}",
-                color=(1, 0, 0, 1),
-                font_name="assets/ProximaSoft-Regular",
-                halign='center'
-            ))
+        self.ids.definition_box.clear_widgets()
 
         # === XP and Score Logic ===
         if correct:
@@ -942,7 +939,7 @@ class QuizScreen(Screen):
                 self.challenge_score += 1
                 progress_manager.increment_quiz()  # +10 XP
         else:
-            self.incorrect_words.append(self.correct_answer)
+            self.incorrect_words.append(correct_answer)
 
         # === Update Progress Tracking ===
         if not self.in_challenge_round:
@@ -951,8 +948,71 @@ class QuizScreen(Screen):
         else:
             self.total_progress = 20 + self.challenge_index + 1
 
-        # Move to next question after delay
-        Clock.schedule_once(lambda dt: self.check_next_step(), 3)
+        # Translation uses OpenAI and may take a moment. Keep it off the Kivy
+        # event loop so Windows does not mark the application as unresponsive.
+        def load_word_feedback():
+            correct_info = get_word_info(correct_answer)
+            selected_info = (
+                None
+                if correct
+                else get_word_info(selected_text)
+            )
+
+            Clock.schedule_once(
+                lambda dt: self._show_word_feedback(
+                    correct,
+                    correct_answer,
+                    selected_text,
+                    correct_info,
+                    selected_info,
+                ),
+                0,
+            )
+
+        threading.Thread(
+            target=load_word_feedback,
+            daemon=True,
+        ).start()
+
+    def _show_word_feedback(
+        self,
+        correct,
+        correct_answer,
+        selected_text,
+        correct_info,
+        selected_info,
+    ):
+        """
+        Render word information after the background translation finishes.
+        """
+        definition_box = self.ids.definition_box
+        definition_box.clear_widgets()
+
+        if correct:
+            feedback_text = correct_info["definition"]
+            feedback_color = (0, 0, 0, 1)
+
+        else:
+            feedback_text = (
+                f"'{correct_answer}' means: "
+                f"{correct_info['translation']}\n"
+                f"You chose '{selected_text}' which means: "
+                f"{selected_info['translation']}"
+            )
+            feedback_color = (1, 0, 0, 1)
+
+        definition_box.add_widget(Label(
+            text=feedback_text,
+            color=feedback_color,
+            font_name="ProximaSoft",
+            halign="center",
+        ))
+
+        # Give the learner time to read the feedback before moving on.
+        Clock.schedule_once(
+            lambda dt: self.check_next_step(),
+            3,
+        )
 
     def check_next_step(self, *args):
         """
@@ -978,50 +1038,81 @@ class QuizScreen(Screen):
 
     def prepare_challenge_round(self):
         """
-        Prepares and launches the challenge round by:
-        - Loading hard questions
-        - Using the predictor model to rank difficulty
-        - Selecting the top 5 hardest words
+        Prepares and launches the challenge round using the curated quiz data.
+
+        Hard words the learner missed during the main quiz are prioritised.
+        Remaining slots are filled with other hard questions. This replaces
+        the old pickled difficulty-prediction model in the production runtime.
         """
         self.in_challenge_round = True
         self.ids.feedback_bar.clear_widgets()
         self.ids.feedback_bar.add_widget(Label(
             text="Entering Challenge Round!",
             color=(1, 0.5, 0, 1),
-            font_name="assets/ProximaSoft-Bold"
+            font_name="ProximaSoft-Bold"
         ))
 
-        # Load local data
-        DATA_PATH = Path(__file__).resolve().parent.parent / "backend" / "data" / "french_quiz_data_aws.json"
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
-            quiz_data = json.load(f)
+        data_path = (
+            PROJECT_ROOT
+            / "backend"
+            / "data"
+            / "french_quiz_data_aws.json"
+        )
 
-        challenge_pool = []
-        for q in quiz_data:
-            if q["level"] == "hard":
-                try:
-                    level_encoded = self.le_level.transform([q["level"]])[0]
-                    correct_encoded = self.le_correct.transform([q["correct"]])[0]
-                except ValueError:
-                    print(f"Skipping unseen word: {q['correct']}")
-                    continue
+        try:
+            with data_path.open("r", encoding="utf-8") as file:
+                quiz_data = json.load(file)
+        except (OSError, json.JSONDecodeError) as exc:
+            self.show_popup(
+                "Error",
+                f"Unable to load challenge questions: {exc}",
+            )
+            self.in_challenge_round = False
+            return
 
-                features = pd.DataFrame([{
-                    "level_encoded": level_encoded,
-                    "correct_encoded": correct_encoded,
-                    "selected_encoded": 0,
-                    "time_taken": 3.0
-                }])
-                score_estimate = self.predictor.predict_proba(features)[0][0]
-                challenge_pool.append((q, score_estimate))
+        hard_questions = [
+            question
+            for question in quiz_data
+            if question.get("level") == "hard"
+        ]
 
-        # Sort by predicted difficulty and take top 5
-        challenge_pool.sort(key=lambda x: x[1], reverse=True)
-        self.challenge_questions = [q for q, _ in challenge_pool[:5]]
+        missed_words = set(self.incorrect_words)
+        priority_questions = [
+            question
+            for question in hard_questions
+            if question.get("correct") in missed_words
+        ]
+        shuffle(priority_questions)
+
+        selected_words = {
+            question.get("correct")
+            for question in priority_questions
+        }
+        remaining_questions = [
+            question
+            for question in hard_questions
+            if question.get("correct") not in selected_words
+        ]
+        shuffle(remaining_questions)
+
+        self.challenge_questions = (
+            priority_questions + remaining_questions
+        )[:5]
         self.challenge_index = 0
 
-        # Start challenge after short delay
-        Clock.schedule_once(lambda dt: self.load_challenge_question(), 2)
+        if not self.challenge_questions:
+            self.show_popup(
+                "Error",
+                "No challenge questions are available.",
+            )
+            self.in_challenge_round = False
+            return
+
+        # Start challenge after a short delay.
+        Clock.schedule_once(
+            lambda dt: self.load_challenge_question(),
+            2,
+        )
 
     def replay_word(self):
         """
@@ -1060,7 +1151,7 @@ class ResultsScreen(Screen):
         if incorrect_words:
             title = Label(
                 text="Words you missed:",
-                font_name="assets/ProximaSoft-Bold",
+                font_name="ProximaSoft-Bold",
                 font_size="18sp",
                 color=(0.7, 0, 0, 1),  # Dark red for emphasis
                 size_hint_y=None,
@@ -1075,7 +1166,7 @@ class ResultsScreen(Screen):
             for word in incorrect_words:
                 item = Label(
                     text=f"• {word}",
-                    font_name="assets/ProximaSoft-Regular",
+                    font_name="ProximaSoft",
                     font_size="16sp",
                     color=(0, 0, 0, 1),
                     size_hint_y=None,
@@ -1089,7 +1180,7 @@ class ResultsScreen(Screen):
             # Show success message if all answers were correct
             success = Label(
                 text="You got everything correct!",
-                font_name="assets/ProximaSoft-Bold",
+                font_name="ProximaSoft-Bold",
                 font_size="18sp",
                 color=(0, 0.6, 0, 1),  # Green
                 size_hint_y=None,
@@ -1187,7 +1278,7 @@ class GrammarExerciseScreen(Screen):
             self.ids.word_tiles.clear_widgets()
 
             for word in words:
-                btn = Button(text=word, font_name="assets/ProximaSoft-Regular", size_hint_y=None, height=dp(40))
+                btn = Button(text=word, font_name="ProximaSoft", size_hint_y=None, height=dp(40))
                 btn.bind(on_release=self.select_word)
                 self.ids.word_tiles.add_widget(btn)
 
@@ -1296,7 +1387,15 @@ class GrammarExerciseScreen(Screen):
             app = App.get_running_app()
             results_screen = app.root.get_screen('grammar_results')
             results = self.last_results_data.get("results", [])
-            results_screen.display_results(results, app.speech_feedback_collected)
+            speech_feedback = getattr(
+                self,
+                "speech_feedback_entries",
+                [],
+            )
+            results_screen.display_results(
+                results,
+                speech_feedback,
+            )
             app.root.current = 'grammar_results'
             return True
         return False
@@ -1388,7 +1487,7 @@ class GrammarResultsScreen(Screen):
         self.ids.sentence_results_box.add_widget(Label(
             text="[b]Sentence Puzzle Results[/b]",
             markup=True,
-            font_name="assets/ProximaSoft-Bold",
+            font_name="ProximaSoft-Bold",
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(50),
@@ -1399,7 +1498,7 @@ class GrammarResultsScreen(Screen):
         correct_count = sum(1 for res in sentence_results if res.get("correct"))
         self.ids.sentence_results_box.add_widget(Label(
             text=f"You got {correct_count}/5 correct in the sentence puzzle!",
-            font_name="assets/ProximaSoft-Regular",
+            font_name="ProximaSoft",
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(30),
@@ -1418,7 +1517,7 @@ class GrammarResultsScreen(Screen):
         self.ids.speech_results_box.add_widget(Label(
             text="[b]Speech Practice Feedback[/b]",
             markup=True,
-            font_name="assets/ProximaSoft-Bold",
+            font_name="ProximaSoft-Bold",
             color=(0, 0, 0, 1),
             size_hint_y=None,
             height=dp(50),
@@ -1483,7 +1582,7 @@ class GrammarResultsScreen(Screen):
         self.ids.sentence_results_box.add_widget(Label(
             text=f"[b]{title}[/b]",
             markup=True,
-            font_name="assets/ProximaSoft-Bold",
+            font_name="ProximaSoft-Bold",
             color=color,
             size_hint_y=None,
             height=dp(40),
@@ -1505,7 +1604,7 @@ class GrammarResultsScreen(Screen):
             box.add_widget(Label(
                 text=f"[b]Prompt:[/b] {prompt}",
                 markup=True,
-                font_name="assets/ProximaSoft-Bold",
+                font_name="ProximaSoft-Bold",
                 halign='left',
                 valign='top',
                 size_hint_y=None,
@@ -1517,7 +1616,7 @@ class GrammarResultsScreen(Screen):
             box.add_widget(Label(
                 text=f"[b]Your answer:[/b] {user}",
                 markup=True,
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 halign='left',
                 valign='top',
                 size_hint_y=None,
@@ -1530,7 +1629,7 @@ class GrammarResultsScreen(Screen):
                 box.add_widget(Label(
                     text=f"[b]Expected:[/b] {expected}",
                     markup=True,
-                    font_name="assets/ProximaSoft-Regular",
+                    font_name="ProximaSoft",
                     halign='left',
                     valign='top',
                     size_hint_y=None,
@@ -1540,7 +1639,7 @@ class GrammarResultsScreen(Screen):
                 box.add_widget(Label(
                     text=f"[b]Feedback:[/b] {feedback}",
                     markup=True,
-                    font_name="assets/ProximaSoft-Regular",
+                    font_name="ProximaSoft",
                     halign='left',
                     valign='top',
                     size_hint_y=None,
@@ -1565,7 +1664,7 @@ class GrammarResultsScreen(Screen):
         self.ids.speech_results_box.add_widget(Label(
             text=f"[b]{title}[/b]",
             markup=True,
-            font_name="assets/ProximaSoft-Bold",
+            font_name="ProximaSoft-Bold",
             color=color,
             size_hint_y=None,
             height=dp(40),
@@ -1581,7 +1680,7 @@ class GrammarResultsScreen(Screen):
             box.add_widget(Label(
                 text=f"[b]Target:[/b] {target}",
                 markup=True,
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 halign='left',
                 valign='top',
                 size_hint_y=None,
@@ -1592,7 +1691,7 @@ class GrammarResultsScreen(Screen):
             box.add_widget(Label(
                 text=f"[b]Your transcription:[/b] {transcript}",
                 markup=True,
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 halign='left',
                 valign='top',
                 size_hint_y=None,
@@ -1603,7 +1702,7 @@ class GrammarResultsScreen(Screen):
             box.add_widget(Label(
                 text=f"[b]Feedback:[/b] {feedback}",
                 markup=True,
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 halign='left',
                 valign='top',
                 size_hint_y=None,
@@ -1655,7 +1754,9 @@ class SpeechPracticeScreen(Screen):
         Prepares UI updates, initialises file path for recording, and updates the progress bar.
         """
         print(f"[DEBUG] on_enter — current target_sentence: {self.target_sentence}")
-        self.recorded_audio_path = "recorded_audio.wav"
+        self.recorded_audio_path = str(
+            Path(tempfile.gettempdir()) / "fluentique_speech_practice.wav"
+        )
 
         # Refresh progress bar after short delay
         Clock.schedule_once(self.update_progress, 0.1)
@@ -1690,7 +1791,7 @@ class SpeechPracticeScreen(Screen):
         Saves it to a temporary .wav file.
         """
         print("Recording started...")
-        self.record_audio('recorded_audio.wav')
+        self.record_audio(self.recorded_audio_path)
 
     def record_audio(self, filename, duration=3, samplerate=16000):
         """
@@ -1710,7 +1811,8 @@ class SpeechPracticeScreen(Screen):
 
     def send_audio_to_backend(self, filepath):
         """
-        Sends the recorded audio file to the backend for speech recognition and feedback.
+        Sends the recorded audio file to the backend for OpenAI transcription
+        and pronunciation feedback.
 
         Args:
             filepath (str): Path to the recorded audio file.
@@ -1718,26 +1820,64 @@ class SpeechPracticeScreen(Screen):
         app = App.get_running_app()
         headers = {"Authorization": f"Bearer {app.token}"}
         target_sentence = self.target_sentence
+        data = {"target_sentence": target_sentence}
 
-        data = {'target_sentence': target_sentence}
-        print(f"Target sentence sent: {data['target_sentence']}")
+        try:
+            with open(filepath, "rb") as audio_file:
+                files = {
+                    "file": (
+                        Path(filepath).name,
+                        audio_file,
+                        "audio/wav",
+                    )
+                }
 
-        with open(filepath, "rb") as audio_file:
-            files = {"file": audio_file}
+                response = requests.post(
+                    f"{API_BASE_URL}/chat/chat_loop",
+                    headers=headers,
+                    files=files,
+                    data=data,
+                    timeout=REQUEST_TIMEOUT,
+                )
 
-            response = requests.post(
-                f"{API_BASE_URL}/chat/chat_loop",
-                headers=headers,
-                files=files,
-                data=data,
-                timeout=REQUEST_TIMEOUT,
+            if response.status_code != 200:
+                self.show_popup(
+                    "AI Service Unavailable",
+                    get_api_error_message(
+                        response,
+                        "Speech feedback failed",
+                    ),
+                )
+                return
+
+            response_data = response.json()
+
+            if response_data.get("error"):
+                self.show_popup(
+                    "Error",
+                    response_data["error"],
+                )
+                return
+
+            self.process_backend_response(response_data)
+
+        except requests.RequestException as exc:
+            self.show_popup(
+                "Error",
+                f"Could not reach the speech service: {exc}",
             )
 
-        if response.status_code == 200:
-            data = response.json()
-            self.process_backend_response(data)
-        else:
-            print("Error submitting audio.", response.status_code)
+        except (OSError, ValueError) as exc:
+            self.show_popup(
+                "Error",
+                f"Could not process the recording: {exc}",
+            )
+
+        finally:
+            try:
+                Path(filepath).unlink(missing_ok=True)
+            except OSError:
+                pass
 
     def process_backend_response(self, data):
         """
@@ -1775,23 +1915,61 @@ class SpeechPracticeScreen(Screen):
         grammar_screen.audio_practice_done = True
         print("audio_practice_done set to True")
 
-        # Download audio feedback if available and play it
+        # Download audio feedback if available and play it.
+        # The backend deletes its generated MP3 after serving it, and the local
+        # temporary copy is cleaned when playback is replaced or continued.
         if audio_file:
             audio_url = f"{API_BASE_URL}/chat/audio/{audio_file}"
-            local_audio_path = os.path.join(tempfile.gettempdir(), audio_file)
+            local_audio_path = None
 
             try:
-                r = requests.get(audio_url, timeout=REQUEST_TIMEOUT)
-                with open(local_audio_path, 'wb') as f:
-                    f.write(r.content)
+                response = requests.get(
+                    audio_url,
+                    timeout=REQUEST_TIMEOUT,
+                )
+                response.raise_for_status()
 
-                from kivy.core.audio import SoundLoader
+                with tempfile.NamedTemporaryFile(
+                    delete=False,
+                    suffix=".mp3",
+                ) as temp_audio:
+                    temp_audio.write(response.content)
+                    local_audio_path = temp_audio.name
+
+                feedback_screen.clear_audio()
+
                 sound = SoundLoader.load(local_audio_path)
+
                 if sound:
                     feedback_screen.current_sound = sound
+                    feedback_screen.current_sound_path = local_audio_path
                     sound.play()
-            except Exception as e:
-                print(f"Error downloading/playing audio: {e}")
+                else:
+                    Path(local_audio_path).unlink(missing_ok=True)
+
+            except (requests.RequestException, OSError) as exc:
+                if local_audio_path:
+                    try:
+                        Path(local_audio_path).unlink(missing_ok=True)
+                    except OSError:
+                        pass
+
+                print(
+                    f"Error downloading/playing audio: {exc}"
+                )
+
+    def show_popup(self, title, message):
+        """
+        Displays speech-practice errors without crashing the screen.
+        """
+        popup = Popup(
+            title=title,
+            content=Label(text=message),
+            size_hint=(None, None),
+            size=(300, 200),
+        )
+        popup.open()
+
 
 class SpeechFeedbackScreen(Screen):
     """
@@ -1800,6 +1978,32 @@ class SpeechFeedbackScreen(Screen):
     """
 
     current_sound = None  # Stores the currently playing audio feedback, if any
+    current_sound_path = None  # Local temporary MP3 used by the current sound
+
+    def clear_audio(self):
+        """
+        Stop/unload the current feedback audio and remove its temporary MP3.
+        """
+        if self.current_sound:
+            try:
+                if self.current_sound.state == "play":
+                    self.current_sound.stop()
+
+                self.current_sound.unload()
+
+            except Exception:
+                pass
+
+            self.current_sound = None
+
+        if self.current_sound_path:
+            try:
+                Path(self.current_sound_path).unlink(missing_ok=True)
+
+            except OSError:
+                pass
+
+            self.current_sound_path = None
 
     def continue_to_next(self):
         """
@@ -1807,10 +2011,7 @@ class SpeechFeedbackScreen(Screen):
         Handles cleanup of any playing audio, updates XP and speech progress,
         and navigates to the next appropriate screen based on user progress.
         """
-        # Stop audio playback if still playing
-        if self.current_sound and self.current_sound.state == 'play':
-            self.current_sound.stop()
-            self.current_sound = None
+        self.clear_audio()
 
         app = App.get_running_app()
         grammar_screen = app.root.get_screen('grammar_exercise')
@@ -1834,7 +2035,6 @@ class SpeechFeedbackScreen(Screen):
             else:
                 # Go back to grammar screen and load the next sentence
                 app.root.current = 'grammar_exercise'
-                Clock.schedule_once(lambda dt: grammar_screen.start_exercise(), 0.5)
         else:
             print("Skipping increment — waiting for audio practice to complete.")
 
@@ -1847,17 +2047,6 @@ class FinalSpeechFeedbackScreen(Screen):
     It confirms that both sentence and speech exercises are done,
     and gathers all result data to be passed into the results summary screen.
     """
-
-    def on_enter(self):
-        """
-        Resets local tracking variables whenever this screen is entered.
-        This helps ensure a clean state before viewing the final results.
-        """
-        self.last_results_data = None
-        self.sentence_progress = 0
-        self.speech_progress = 0
-        self.audio_practice_done = False
-        self.selected_words = []
 
     def go_to_results(self):
         """
@@ -1888,41 +2077,78 @@ class FinalSpeechFeedbackScreen(Screen):
         results_screen.display_results(sentence_results, speech_feedback)
         app.root.current = 'grammar_results'
 
+    def show_popup(self, title, message):
+        """
+        Displays a result-screen error message.
+        """
+        popup = Popup(
+            title=title,
+            content=Label(text=message),
+            size_hint=(None, None),
+            size=(300, 200),
+        )
+        popup.open()
+
     def save_to_logs(self, sentence_results, speech_feedback):
         """
-        Saves the current grammar and speech session results to timestamped logs.
-
-        Args:
-            sentence_results (list): Results of sentence-building exercises.
-            speech_feedback (list): Feedback entries from speech practice.
+        Saves grammar and speech results in the format consumed by
+        backend.utils.log_loader.
         """
-        log_dir = Path(__file__).resolve().parent.parent / "backend" / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
+        BASE_LOG_DIR.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
         # === Sentence Log ===
-        sentence_log = log_dir / "sentence_exercise_log.txt"
-        with open(sentence_log, "a", encoding="utf-8") as f:
-            f.write(f"\n🗓️ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} — Sentence Exercise\n")
+        sentence_log = BASE_LOG_DIR / "sentence_exercise_log.txt"
+
+        with sentence_log.open(
+            "a",
+            encoding="utf-8",
+        ) as file:
+            file.write(
+                f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                "- Sentence Exercise\n"
+            )
+
             for result in sentence_results:
                 target = result.get("expected", "")
                 user_input = result.get("user", "")
                 is_correct = result.get("correct", False)
 
-                f.write(f"Target: {target}\n")
-                f.write(f"User Input: {user_input}\n")
-                f.write(f"{'Correct' if is_correct else 'Incorrect'}\n\n")
+                if is_correct:
+                    file.write(
+                        f"Correct: {user_input}\n\n"
+                    )
+                else:
+                    # Keep these two lines adjacent because log_loader reads
+                    # them as a user/expected mistake pair.
+                    file.write(
+                        f"❌ User: {user_input}\n"
+                    )
+                    file.write(
+                        f"✅ Expected: {target}\n\n"
+                    )
 
         # === Speech Log ===
-        speech_log = log_dir / "speech_feedback_log.txt"
-        with open(speech_log, "a", encoding="utf-8") as f:
-            f.write(f"\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} — Speech Feedback\n")
+        speech_log = BASE_LOG_DIR / "speech_feedback_log.txt"
+
+        with speech_log.open(
+            "a",
+            encoding="utf-8",
+        ) as file:
             for entry in speech_feedback:
                 sentence = entry.get("target", "")
                 transcription = entry.get("transcription", "")
                 feedback = entry.get("feedback", "")
-                f.write(f"Sentence: {sentence}\n")
-                f.write(f"User Said: {transcription}\n")
-                f.write(f"Feedback: {feedback}\n\n")
+
+                # log_loader expects a four-line block for each speech issue:
+                # sentence, user transcription, feedback, blank separator.
+                file.write(
+                    f"🎯 Sentence: {sentence}\n"
+                    f"🗣️ User Said: {transcription}\n"
+                    f"💬 Feedback: {feedback}\n\n"
+                )
 
 class ChatbotTutorScreen(Screen):
     """
@@ -1961,6 +2187,15 @@ class ChatbotTutorScreen(Screen):
                     audio_file = data.get("audio_file", "")
                     self.add_message(reply, align="left", is_ai=True)
                     self.play_avatar_audio(audio_file)
+                else:
+                    self.set_avatar("idle")
+                    self.add_message(
+                        get_api_error_message(
+                            response,
+                            "AI tutor unavailable",
+                        ),
+                        align="left",
+                    )
             except Exception as e:
                 self.set_avatar("idle")
                 self.add_message(f"{e}", align="left")
@@ -2005,7 +2240,13 @@ class ChatbotTutorScreen(Screen):
                     self.play_avatar_audio(audio_file)
                 else:
                     self.set_avatar("idle")
-                    self.add_message("Error AI", align="left")
+                    self.add_message(
+                        get_api_error_message(
+                            response,
+                            "AI tutor unavailable",
+                        ),
+                        align="left",
+                    )
             except Exception as e:
                 self.set_avatar("idle")
                 self.add_message(f"{e}", align="left")
@@ -2017,39 +2258,88 @@ class ChatbotTutorScreen(Screen):
         Changes the avatar based on AI's state (idle, thinking, or talking).
         """
         sources = {
-            "idle": "assets/avatar_idle.png",
-            "thinking": "assets/typing_dots.gif",
-            "talking": "assets/avatar_talking.gif"
+            "idle": str(ASSETS_DIR / "avatar_idle.png"),
+            "thinking": str(ASSETS_DIR / "typing_dots.gif"),
+            "talking": str(ASSETS_DIR / "avatar_talking.gif"),
         }
         self.ids.avatar.source = sources.get(state, sources["idle"])
 
     def play_avatar_audio(self, audio_file):
         """
-        Plays the avatar's spoken response using the returned audio file.
+        Play the avatar's spoken response and clean up the downloaded MP3
+        after playback finishes.
         """
+        if not audio_file:
+            self.set_avatar("idle")
+            return
+
         self.set_avatar("talking")
         audio_url = f"{API_BASE_URL}/chat/audio/{audio_file}"
+        tmp_path = None
 
         try:
-            response = requests.get(audio_url, timeout=REQUEST_TIMEOUT)
-            if response.status_code == 200:
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
-                    tmp.write(response.content)
-                    tmp_path = tmp.name
+            response = requests.get(
+                audio_url,
+                timeout=REQUEST_TIMEOUT,
+            )
+            response.raise_for_status()
 
-                sound = SoundLoader.load(tmp_path)
-                if sound:
-                    def finish_playback(dt):
-                        sound.stop()
-                        self.set_avatar("idle")
+            with tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=".mp3",
+            ) as temp_audio:
+                temp_audio.write(response.content)
+                tmp_path = temp_audio.name
 
-                    sound.play()
-                    duration = sound.length if sound.length and sound.length > 0 else 2.5
-                    Clock.schedule_once(finish_playback, duration + 0.3)
-                else:
-                    self.set_avatar("idle")
-        except Exception as e:
-            print("Exception in playing avatar audio:", e)
+            sound = SoundLoader.load(
+                tmp_path
+            )
+
+            if not sound:
+                Path(tmp_path).unlink(missing_ok=True)
+                self.set_avatar("idle")
+                return
+
+            def finish_playback(dt):
+                try:
+                    sound.stop()
+                    sound.unload()
+
+                except Exception:
+                    pass
+
+                try:
+                    Path(tmp_path).unlink(missing_ok=True)
+
+                except OSError:
+                    pass
+
+                self.set_avatar("idle")
+
+            sound.play()
+
+            duration = (
+                sound.length
+                if sound.length and sound.length > 0
+                else 2.5
+            )
+
+            Clock.schedule_once(
+                finish_playback,
+                duration + 0.3,
+            )
+
+        except (requests.RequestException, OSError) as exc:
+            if tmp_path:
+                try:
+                    Path(tmp_path).unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+            print(
+                "Exception in playing avatar audio:",
+                exc,
+            )
             self.set_avatar("idle")
 
     def add_message(self, text, align="left", is_ai=False):
@@ -2069,10 +2359,19 @@ class ChatbotTutorScreen(Screen):
             valign="top",
             text_size=(self.ids.chat_box.width - dp(20), None),
             font_size="16sp",
-            font_name="assets/ProximaSoft-Regular",
+            font_name="ProximaSoft",
             color=(0, 0, 0, 1)
         )
         msg.bind(texture_size=lambda inst, val: setattr(msg, 'height', val[1] + dp(10)))
+
+        # Store the role directly on the message widget so transcript logging
+        # does not have to infer the speaker from the displayed text.
+        msg.chat_role = (
+            "AI"
+            if is_ai or align == "left"
+            else "User"
+        )
+
         wrapper.add_widget(msg)
 
         # Add 'Translate to English' button under AI messages
@@ -2109,14 +2408,37 @@ class ChatbotTutorScreen(Screen):
                 english = response.json().get("translation", "")
                 translated = Label(
                     text=f"🇬🇧 {english}",
-                    font_name="assets/ProximaSoft-Regular",
+                    font_name="ProximaSoft",
                     font_size="15sp",
                     color=(0.2, 0.2, 0.2, 1),
                     size_hint_y=None,
                     text_size=(self.ids.chat_box.width - dp(20), None)
                 )
-                translated.bind(texture_size=lambda inst, val: setattr(translated, 'height', val[1] + dp(5)))
-                container.add_widget(translated)
+            else:
+                translated = Label(
+                    text=get_api_error_message(
+                        response,
+                        "Translation unavailable",
+                    ),
+                    font_name="ProximaSoft",
+                    font_size="15sp",
+                    color=(0.7, 0.1, 0.1, 1),
+                    size_hint_y=None,
+                    text_size=(self.ids.chat_box.width - dp(20), None)
+                )
+
+            translated.bind(
+                texture_size=lambda inst, val: setattr(
+                    translated,
+                    'height',
+                    val[1] + dp(5),
+                )
+            )
+
+            # Translation helpers are UI annotations, not separate chat turns.
+            translated.chat_role = "Translation"
+
+            container.add_widget(translated)
         except Exception as e:
             print("Translation error:", e)
 
@@ -2150,90 +2472,149 @@ class ChatbotTutorScreen(Screen):
 
     def send_voice_to_backend(self, audio_path):
         """
-        Converts voice input to text using Wav2Vec2 or Google STT.
-        Then sends the transcription to the AI tutor for a response.
+        Uploads voice input to the backend for OpenAI transcription, then sends
+        the resulting French text to the AI tutor.
         """
         app = App.get_running_app()
         headers = {"Authorization": f"Bearer {app.token}"}
-        transcription = ""
 
         try:
-            # Primary method: use local Wav2Vec2 model
-            model_dir = (
-                PROJECT_ROOT
-                / "backend"
-                / "models"
-                / "fluentique-wav2vec2-fr"
+            with open(audio_path, "rb") as audio_file:
+                transcription_response = requests.post(
+                    f"{API_BASE_URL}/chat/transcribe",
+                    headers=headers,
+                    files={
+                        "file": (
+                            Path(audio_path).name,
+                            audio_file,
+                            "audio/wav",
+                        )
+                    },
+                    timeout=REQUEST_TIMEOUT,
+                )
+
+            if transcription_response.status_code != 200:
+                self.set_avatar("idle")
+                self.add_message(
+                    get_api_error_message(
+                        transcription_response,
+                        "Voice transcription failed",
+                    ),
+                    align="left",
+                )
+                return
+
+            transcription = (
+                transcription_response.json()
+                .get("transcription", "")
+                .strip()
             )
-            processor = Wav2Vec2Processor.from_pretrained(str(model_dir))
-            model = Wav2Vec2ForCTC.from_pretrained(str(model_dir))
 
-            speech_array, _ = librosa.load(audio_path, sr=16000)
-            inputs = processor(speech_array, sampling_rate=16000, return_tensors="pt", padding=True)
+            if not transcription:
+                self.set_avatar("idle")
+                self.add_message(
+                    "I couldn't understand that recording.",
+                    align="left",
+                )
+                return
 
-            with torch.no_grad():
-                logits = model(**inputs).logits
-            pred_ids = torch.argmax(logits, dim=-1)
-            transcription = processor.batch_decode(pred_ids)[0].lower().strip()
-
-            if len(transcription) < 2:
-                raise ValueError("Model working - Wav2Vec2")
-
-        except Exception:
-            # Fallback: use Google Speech API
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDS_PATH
-            client_google = speech.SpeechClient()
-
-            with io.open(audio_path, "rb") as audio_file:
-                content = audio_file.read()
-
-            audio = speech.RecognitionAudio(content=content)
-            config = speech.RecognitionConfig(
-                encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                sample_rate_hertz=16000,
-                language_code="fr-FR",
+            self.add_message(
+                transcription,
+                align="right",
             )
-            response = client_google.recognize(config=config, audio=audio)
-            transcription = response.results[0].alternatives[0].transcript if response.results else ""
+            self.set_avatar("thinking")
 
-        # Format the transcription before sending to AI
-        transcription = transcription.strip()
-        if transcription and not transcription.endswith("."):
-            transcription += "."
-        if transcription:
-            transcription = transcription[0].upper() + transcription[1:]
+            response = requests.post(
+                f"{API_BASE_URL}/chat/tutor",
+                json={"message": transcription},
+                headers=headers,
+                timeout=REQUEST_TIMEOUT,
+            )
 
-        self.add_message(transcription, align="right")
-        self.set_avatar("thinking")
+            if response.status_code == 200:
+                data = response.json()
+                self.add_message(
+                    data.get("reply", ""),
+                    align="left",
+                    is_ai=True,
+                )
+                self.play_avatar_audio(
+                    data.get("audio_file", "")
+                )
+            else:
+                self.set_avatar("idle")
+                self.add_message(
+                    get_api_error_message(
+                        response,
+                        "Voice tutor request failed",
+                    ),
+                    align="left",
+                )
 
-        payload = {"message": transcription}
-        response = requests.post(f"{API_BASE_URL}/chat/tutor", json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
-
-        if response.status_code == 200:
-            data = response.json()
-            self.add_message(data.get("reply", ""), align="left", is_ai=True)
-            self.play_avatar_audio(data.get("audio_file", ""))
-        else:
+        except requests.RequestException as exc:
             self.set_avatar("idle")
-            self.add_message("Voice error", align="left")
+            self.add_message(
+                f"Voice error: {exc}",
+                align="left",
+            )
+
+        except OSError as exc:
+            self.set_avatar("idle")
+            self.add_message(
+                f"Recording error: {exc}",
+                align="left",
+            )
+
+        finally:
+            try:
+                Path(audio_path).unlink(missing_ok=True)
+            except OSError:
+                pass
 
     def end_chat_session(self):
         """
         Ends the current chat session. Saves the conversation to a local log,
         and retrieves a session summary from the backend.
         """
-        from datetime import datetime
         app = App.get_running_app()
 
-        # Extract all user and AI messages from the chat UI
+        # Extract only real user/AI chat messages. Buttons and translated helper
+        # labels are intentionally excluded from the transcript.
         transcript = []
+
         for child in self.ids.chat_box.children[::-1]:
-            if hasattr(child, 'children'):
-                for inner in child.children:
-                    if hasattr(inner, 'text') and inner.text.strip():
-                        timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M]")
-                        direction = "AI" if "🇬🇧" not in inner.text else "User"
-                        transcript.append(f"{timestamp} {direction}: {inner.text.strip()}")
+            if not hasattr(child, "children"):
+                continue
+
+            for inner in reversed(child.children):
+                role = getattr(
+                    inner,
+                    "chat_role",
+                    None,
+                )
+
+                if role not in {
+                    "User",
+                    "AI",
+                }:
+                    continue
+
+                message_text = getattr(
+                    inner,
+                    "text",
+                    "",
+                ).strip()
+
+                if not message_text:
+                    continue
+
+                timestamp = datetime.now().strftime(
+                    "[%Y-%m-%d %H:%M]"
+                )
+
+                transcript.append(
+                    f"{timestamp} {role}: {message_text}"
+                )
 
         # Save chat transcript locally
         log_folder = BASE_LOG_DIR
@@ -2250,7 +2631,10 @@ class ChatbotTutorScreen(Screen):
             if response.status_code == 200:
                 app.summary_text = response.json().get("summary", "No summary returned.")
             else:
-                app.summary_text = "Could not retrieve summary."
+                app.summary_text = get_api_error_message(
+                    response,
+                    "Could not retrieve summary",
+                )
         except Exception as e:
             app.summary_text = f"Summary error: {str(e)}"
 
@@ -2310,7 +2694,7 @@ class QuizMistakesLogsScreen(Screen):
         if not log_path.exists():
             self.ids.quiz_mistakes_container.add_widget(Label(
                 text="No mistake logs found.",
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
                 height=dp(30)
@@ -2359,7 +2743,7 @@ class QuizMistakesLogsScreen(Screen):
         for line in lines:
             label = Label(
                 text=line.strip(),
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
@@ -2454,7 +2838,7 @@ class QuizScoresLogsScreen(Screen):
         for line in lines:
             label = Label(
                 text=line.strip(),
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
@@ -2486,7 +2870,7 @@ class SentenceResultsLogsScreen(Screen):
         if not log_path.exists():
             self.ids.sentence_results_container.add_widget(Label(
                 text="No sentence puzzle logs found.",
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
@@ -2501,7 +2885,7 @@ class SentenceResultsLogsScreen(Screen):
         for line in lines:
             label = Label(
                 text=line.strip(),
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 text_size=(Window.width - dp(60), None),
@@ -2545,19 +2929,79 @@ class SpeechFeedbackLogsScreen(Screen):
         if not lines:
             self.ids.speech_feedback_container.add_widget(Label(
                 text="No speech feedback logs found.",
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
                 height=dp(30)
             ))
             return
 
-        # Extract keywords or terms from lines starting with "- "
+        # Extract useful terms from the current feedback-log format.
+        # Keep support for the older "Feedback:" prefix so existing logs still work.
+        import re
+
+        stop_words = {
+            "about",
+            "after",
+            "again",
+            "also",
+            "because",
+            "been",
+            "being",
+            "correct",
+            "could",
+            "from",
+            "have",
+            "into",
+            "just",
+            "more",
+            "need",
+            "sentence",
+            "should",
+            "that",
+            "their",
+            "there",
+            "these",
+            "they",
+            "this",
+            "very",
+            "what",
+            "when",
+            "which",
+            "with",
+            "would",
+            "your",
+        }
+
         feedback_terms = []
+
         for line in lines:
-            if line.strip().startswith("- "):
-                word = line[2:].strip().split()[0].lower()
-                feedback_terms.append(word)
+            stripped = line.strip()
+
+            if stripped.startswith("💬 Feedback:"):
+                feedback_text = stripped.removeprefix(
+                    "💬 Feedback:"
+                ).strip()
+
+            elif stripped.startswith("Feedback:"):
+                feedback_text = stripped.removeprefix(
+                    "Feedback:"
+                ).strip()
+
+            else:
+                continue
+
+            words = re.findall(
+                r"[A-Za-zÀ-ÖØ-öø-ÿ']+",
+                feedback_text.lower(),
+            )
+
+            feedback_terms.extend(
+                word
+                for word in words
+                if len(word) >= 4
+                and word not in stop_words
+            )
 
         # Create visual chart of common feedback terms
         if feedback_terms:
@@ -2566,10 +3010,17 @@ class SpeechFeedbackLogsScreen(Screen):
             top_terms = term_counts.most_common(10)  # Top 10 most used words
             words, counts = zip(*top_terms)
 
-            ax.bar(words, counts, color="#5C6BC0")
+            positions = range(len(words))
+            ax.bar(positions, counts, color="#5C6BC0")
             ax.set_title("Common Speech Feedback Terms", fontsize=10)
             ax.set_ylabel("Frequency", fontsize=9)
-            ax.set_xticklabels(words, rotation=45, ha='right', fontsize=8)
+            ax.set_xticks(list(positions))
+            ax.set_xticklabels(
+                words,
+                rotation=45,
+                ha="right",
+                fontsize=8,
+            )
             plt.tight_layout()
 
             # Save chart to a temporary file
@@ -2589,7 +3040,7 @@ class SpeechFeedbackLogsScreen(Screen):
         for line in lines:
             label = Label(
                 text=line.strip(),
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 padding=(dp(10), dp(10)),
@@ -2648,7 +3099,7 @@ class ChatTranscriptsLogsScreen(Screen):
         if not grouped_logs:
             self.ids.chat_transcripts_container.add_widget(Label(
                 text="No matching transcripts.",
-                font_name="assets/ProximaSoft-Regular",
+                font_name="ProximaSoft",
                 font_size="15sp",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
@@ -2662,7 +3113,7 @@ class ChatTranscriptsLogsScreen(Screen):
             date_label = Label(
                 text=f"[b]{date[:4]}-{date[4:6]}-{date[6:]}[/b]",  # Format: YYYY-MM-DD
                 markup=True,
-                font_name="assets/ProximaSoft-Bold",
+                font_name="ProximaSoft-Bold",
                 font_size="16sp",
                 color=(1, 1, 1, 1),
                 size_hint_y=None,
@@ -2675,7 +3126,7 @@ class ChatTranscriptsLogsScreen(Screen):
                 log_label = Label(
                     text=f"[b]{name}[/b]\n{content}",
                     markup=True,
-                    font_name="assets/ProximaSoft-Regular",
+                    font_name="ProximaSoft",
                     font_size="15sp",
                     color=(1, 1, 1, 1),
                     size_hint_y=None,
@@ -2711,28 +3162,28 @@ class FluentiqueApp(App):
         Loads all `.kv` files and initialises the ScreenManager with all defined screens.
         """
         # Load all UI layouts (defined separately in .kv files)
-        Builder.load_file("kv/intro_continue.kv")
-        Builder.load_file("kv/intro_get_started.kv")
-        Builder.load_file("kv/registration.kv")
-        Builder.load_file("kv/login.kv")
-        Builder.load_file("kv/loading.kv")
-        Builder.load_file("kv/home_completed.kv")
-        Builder.load_file("kv/home_incomplete.kv")
-        Builder.load_file("kv/quiz.kv")
-        Builder.load_file("kv/results.kv")
-        Builder.load_file("kv/grammar_exercise.kv")
-        Builder.load_file("kv/grammar_results.kv")
-        Builder.load_file("kv/sentence_result.kv")
-        Builder.load_file("kv/speech_practice.kv")
-        Builder.load_file("kv/speech_feedback.kv")
-        Builder.load_file("kv/final_speech_feedback.kv")
-        Builder.load_file("kv/leaderboard.kv")
-        Builder.load_file("kv/profile.kv")
-        Builder.load_file("kv/upload_avatar.kv")
-        Builder.load_file("kv/chatbot_tutor.kv")
-        Builder.load_file("kv/summary.kv")
-        Builder.load_file("kv/mistake_log_menu.kv")
-        Builder.load_file("kv/mistake_logs.kv")
+        Builder.load_file(str(KV_DIR / "intro_continue.kv"))
+        Builder.load_file(str(KV_DIR / "intro_get_started.kv"))
+        Builder.load_file(str(KV_DIR / "registration.kv"))
+        Builder.load_file(str(KV_DIR / "login.kv"))
+        Builder.load_file(str(KV_DIR / "loading.kv"))
+        Builder.load_file(str(KV_DIR / "home_completed.kv"))
+        Builder.load_file(str(KV_DIR / "home_incomplete.kv"))
+        Builder.load_file(str(KV_DIR / "quiz.kv"))
+        Builder.load_file(str(KV_DIR / "results.kv"))
+        Builder.load_file(str(KV_DIR / "grammar_exercise.kv"))
+        Builder.load_file(str(KV_DIR / "grammar_results.kv"))
+        Builder.load_file(str(KV_DIR / "sentence_result.kv"))
+        Builder.load_file(str(KV_DIR / "speech_practice.kv"))
+        Builder.load_file(str(KV_DIR / "speech_feedback.kv"))
+        Builder.load_file(str(KV_DIR / "final_speech_feedback.kv"))
+        Builder.load_file(str(KV_DIR / "leaderboard.kv"))
+        Builder.load_file(str(KV_DIR / "profile.kv"))
+        Builder.load_file(str(KV_DIR / "upload_avatar.kv"))
+        Builder.load_file(str(KV_DIR / "chatbot_tutor.kv"))
+        Builder.load_file(str(KV_DIR / "summary.kv"))
+        Builder.load_file(str(KV_DIR / "mistake_log_menu.kv"))
+        Builder.load_file(str(KV_DIR / "mistake_logs.kv"))
 
         # Define and register all screens in the ScreenManager
         sm = ScreenManager()
