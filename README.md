@@ -1,34 +1,86 @@
 # Fluentique
 
-Fluentique is an AI-powered English-to-French language-learning application developed as a university final year project.
+**Fluentique** is an AI-powered English-to-French language-learning application developed as my university final year project.
 
-The application combines vocabulary practice, grammar exercises, French speech transcription, pronunciation feedback, conversational AI, text-to-speech, gamification, progress tracking, and Firebase-backed authentication in a Kivy desktop interface with a FastAPI backend.
+The application combines vocabulary practice, grammar exercises, speech recognition, pronunciation feedback, conversational AI, text-to-speech, gamification, progress tracking, and cloud-backed authentication in a Python/Kivy desktop application with a FastAPI backend.
+
+<p align="center">
+  <img src="docs/screenshots/onboarding.png" alt="Fluentique onboarding interface" width="800">
+</p>
 
 ## Features
 
-- User registration and login with Firebase Authentication
-- Vocabulary listening quizzes using curated local French exercise data
-- Grammar translation and sentence-building exercises
-- French speech transcription through OpenAI
-- AI-generated grammar, pronunciation, and learning feedback
-- Free-flowing French conversational tutor
+- Firebase Authentication for user registration and login
+- Vocabulary listening quizzes using curated French exercise data
+- Grammar and sentence-building exercises
+- French speech transcription using OpenAI
+- AI-generated grammar and pronunciation feedback
+- Interactive French AI tutor
 - French-to-English translation support
 - Amazon Polly text-to-speech
-- XP, streak, league, and leaderboard tracking
-- User profiles and profile-picture uploads with Firebase Storage
-- Exercise, speech, quiz, and conversation logging
-- Personalised tutor context based on previous learning mistakes
+- Amazon Translate vocabulary meanings
+- XP, streak, league, and leaderboard systems
+- User profiles and profile-picture uploads
+- Exercise, quiz, speech, and conversation history
+- Personalised tutor context based on previous learner mistakes
 
-## Current Architecture
+---
 
-Fluentique uses a lightweight API-based runtime rather than loading large machine-learning models locally.
+## Application Preview
+
+### Learning Dashboard
+
+Fluentique uses a progression-based home screen to provide access to sentence practice, speech exercises, the AI tutor, leaderboard, profile, and other learning features.
+
+<p align="center">
+  <img src="docs/screenshots/home-overview.png" alt="Fluentique home and feature overview" width="750">
+</p>
+
+### Vocabulary Practice
+
+Vocabulary quizzes combine French word recognition, listening practice, answer feedback, definitions, and English meanings.
+
+<p align="center">
+  <img src="docs/screenshots/quiz.png" alt="Fluentique vocabulary quiz" width="320">
+</p>
+
+### AI French Tutor
+
+The conversational tutor allows learners to practise French naturally while receiving corrections, explanations, translations, and spoken responses.
+
+<p align="center">
+  <img src="docs/screenshots/ai-tutor.png" alt="Fluentique AI French tutor" width="320">
+</p>
+
+### Speech & Pronunciation Feedback
+
+Learners can record themselves speaking French. Fluentique transcribes the recording, compares it with the target sentence, and generates personalised feedback.
+
+<p align="center">
+  <img src="docs/screenshots/speech-feedback.png" alt="Fluentique speech and pronunciation feedback" width="320">
+</p>
+
+### Learning History
+
+Quiz mistakes, scores, sentence exercises, speech feedback, and AI conversation logs can be reviewed from the application.
+
+<p align="center">
+  <img src="docs/screenshots/progress-logs.png" alt="Fluentique progress logs" width="280">
+</p>
+
+---
+
+## Architecture
+
+The current portfolio version of Fluentique uses a lightweight API-based architecture rather than loading large machine-learning models directly into the application.
 
 ### Frontend
 
 - Python
 - Kivy
 - Requests
-- SoundDevice / SoundFile
+- SoundDevice
+- SoundFile
 - Matplotlib
 
 ### Backend
@@ -37,18 +89,23 @@ Fluentique uses a lightweight API-based runtime rather than loading large machin
 - Uvicorn
 - Firebase Admin SDK
 
-### AI and Language Services
+### AI & Language Services
 
-- OpenAI for:
-  - French speech transcription
-  - grammar correction and explanations
-  - pronunciation/conversation feedback
-  - conversational tutoring
-  - French-to-English translation for AI-driven features
-  - tutoring-session summaries
+**OpenAI**
+- French speech transcription
+- grammar correction and explanations
+- pronunciation feedback
+- conversational tutoring
+- AI-driven translation
+- tutoring-session summaries
+
+**AWS**
 - Amazon Polly for French and English text-to-speech
-- Amazon Translate for vocabulary-quiz English meanings
-- Curated local JSON datasets for quizzes and grammar exercises
+- Amazon Translate for vocabulary meanings
+
+**Local learning content**
+- curated JSON vocabulary datasets
+- curated grammar and sentence exercises
 
 ### Cloud Services
 
@@ -56,6 +113,9 @@ Fluentique uses a lightweight API-based runtime rather than loading large machin
 - Firebase Firestore
 - Firebase Storage
 - Amazon Polly
+- Amazon Translate
+
+---
 
 ## Project Structure
 
@@ -68,20 +128,26 @@ Fluentique/
 │   ├── utils/
 │   ├── config.py
 │   └── server.py
+│
+├── docs/
+│   └── screenshots/
+│
 ├── experiments/
 │   ├── train_grammar_correction_model.py
 │   └── train_speech_recognition_model.py
+│
 ├── frontend/
 │   ├── assets/
 │   ├── kv/
 │   └── main_kivy.py
+│
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
 
-The following are intentionally excluded from Git:
+Runtime-generated or sensitive files are intentionally excluded from version control, including:
 
 ```text
 .env
@@ -93,20 +159,20 @@ data/progress.json
 recorded_audio*
 ```
 
-These may contain private credentials, historical model files, runtime data, logs, or temporary user recordings.
+---
 
 ## Setup
 
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
-cd <repository-folder>
+git clone https://github.com/arana1000/Fluentique.git
+cd Fluentique
 ```
 
 ### 2. Create a virtual environment
 
-Python 3.10 or 3.11 is recommended.
+Python **3.10 or 3.11** is recommended.
 
 On Windows:
 
@@ -121,76 +187,84 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Some audio functionality also requires FFmpeg to be installed and available on the system PATH because `pydub` is used when combining generated audio.
+Some audio functionality also requires **FFmpeg** to be installed and available on the system PATH.
+
+---
 
 ## Environment Configuration
 
-Create a local `.env` file in the project root using `.env.example` as the template:
+Create a `.env` file in the project root using `.env.example` as a template.
 
 ```env
-# === Firebase ===
+# Firebase
 FIREBASE_CREDENTIALS=secrets/firebase-admin.json
 FIREBASE_WEB_API_KEY=your_firebase_web_api_key
 FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
 
-# === OpenAI ===
+# OpenAI
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_TRANSCRIPTION_MODEL=gpt-4o-mini-transcribe
 
-# === AWS Polly ===
+# AWS
 AWS_REGION=eu-west-2
 POLLY_VOICE_ID=Celine
 POLLY_ENGLISH_VOICE_ID=Amy
 POLLY_LANGUAGE_CODE=fr-FR
 
-# === Backend / Frontend API ===
+# Backend / Frontend
 CORS_ORIGINS=*
 FLUENTIQUE_API_URL=http://127.0.0.1:8000
 ```
 
-Do not commit the real `.env` file or any private credentials.
+Never commit your real `.env` file or any credentials.
 
-## Firebase Credentials
+---
 
-Create a local folder in the project root:
+## Firebase Configuration
+
+Create a local directory:
 
 ```text
 secrets/
 ```
 
-Place the Firebase Admin service-account file inside it, for example:
+Place the Firebase Admin service-account JSON file inside it:
 
 ```text
 secrets/
 └── firebase-admin.json
 ```
 
-The path must match `FIREBASE_CREDENTIALS` in your local `.env`.
+The location must match the `FIREBASE_CREDENTIALS` value configured in `.env`.
 
-The `secrets/` directory is excluded from Git and service-account files must never be committed.
+The `secrets/` directory is ignored by Git and service-account credentials should never be committed.
+
+---
 
 ## AWS Configuration
 
-Amazon Polly uses the standard AWS credential chain rather than hard-coded access keys.
+Fluentique uses the standard AWS credential chain instead of storing AWS access keys in source code.
 
-Configure AWS locally with:
+Configure credentials locally using:
 
 ```bash
 aws configure
 ```
 
-The default Fluentique region is:
+The default region used by the project is:
 
 ```text
 eu-west-2
 ```
 
-AWS access keys should never be stored inside the repository.
+The configured IAM identity requires access to the AWS services used by Fluentique, including Amazon Polly and Amazon Translate.
+
+---
 
 ## Running Fluentique
 
-The backend should be running before opening features in the frontend that depend on the API.
+The backend should be started before the frontend.
 
 ### Start the backend
 
@@ -208,66 +282,95 @@ uvicorn backend.server:app --host 127.0.0.1 --port 8000 --reload
 
 ### Start the frontend
 
-Open a second terminal from the project root:
+Open another terminal from the project root:
 
 ```bash
 python frontend/main_kivy.py
 ```
 
-`FLUENTIQUE_API_URL` can be changed in `.env` if the backend is running at a different address.
+If the backend is running at another address, update `FLUENTIQUE_API_URL` in `.env`.
 
-## Runtime Data and Logs
+---
 
-Fluentique stores some learning history locally during use, including quiz results, grammar mistakes, speech feedback, chat transcripts, and local progress cache data.
+## OpenAI API Availability
 
-These runtime files are intentionally ignored by Git.
+OpenAI-powered functionality requires a configured API key with available API credits.
 
-Firebase is used for account-related data such as authentication, XP, league information, profile information, and profile-picture storage.
+If the configured key is invalid, rate-limited, or has exhausted its credits, Fluentique keeps non-OpenAI functionality available and displays a user-friendly service message rather than crashing.
+
+OpenAI API usage may incur charges.
+
+---
+
+## Progress & Runtime Data
+
+During use, Fluentique may create local learning-history data such as:
+
+- quiz results
+- grammar mistakes
+- speech feedback
+- AI chat transcripts
+- local progress cache data
+
+These runtime files are intentionally excluded from Git.
+
+Firebase is used for persistent account-related information such as authentication, XP, streak and league information, user profiles, and profile-picture storage.
+
+---
 
 ## Original Machine-Learning Experiments
 
-The original university project explored local machine-learning approaches for grammar correction and French speech recognition, including model training/fine-tuning workflows.
+The original university project also explored locally trained and fine-tuned machine-learning approaches for:
 
-Those experiments are preserved under:
+- French grammar correction
+- French speech recognition
+
+The original experimentation code is preserved under:
 
 ```text
 experiments/
 ```
 
-They are retained as evidence of the original FYP research and implementation work, but they are **not part of the current production runtime**.
+These files document the research and development work carried out during the final year project, but they are **not part of the current runtime architecture**.
 
-The portfolio version migrated runtime inference to API-based services to make Fluentique easier to run, maintain, deploy, and review without requiring large local model downloads or heavyweight ML dependencies.
+The portfolio version moved runtime inference to cloud APIs to make Fluentique significantly easier to run, maintain, review, and deploy without requiring large local model downloads.
 
-As a result, the current application does not require PyTorch, Hugging Face Transformers, Wav2Vec2 model downloads, or Google Speech-to-Text credentials.
+As a result, the current runtime does not require PyTorch, Hugging Face Transformers, local Wav2Vec2 model downloads, or Google Speech-to-Text credentials.
+
+---
 
 ## Security
 
-Sensitive credentials and generated runtime files are deliberately kept outside version control.
+Fluentique keeps sensitive credentials and generated runtime files outside version control.
 
-The repository's `.gitignore` protects items including:
+The repository's `.gitignore` protects files including:
 
 - real `.env` files
 - Firebase service-account credentials
 - AWS credential exports
-- historical/downloaded local model directories
+- downloaded/local model directories
 - runtime logs
 - local progress data
 - recorded user audio
-- Python virtual environments and cache files
+- Python virtual environments
+- Python cache files
 
-Use `.env.example` only as a configuration template.
+`.env.example` contains configuration placeholders only.
 
-If a credential has ever been exposed publicly, removing it from the repository is not enough. The credential should also be revoked or rotated with the relevant provider.
+Credentials that have previously been exposed should always be revoked or rotated rather than simply deleted from source control.
+
+---
 
 ## Background
 
-Fluentique was developed as a university final year project exploring how artificial intelligence, language technologies, cloud services, and gamification can be combined into an interactive French-learning application.
+Fluentique was created as my Computer Science (Artificial Intelligence) final year project.
 
-The project originally included experiments with locally trained and fine-tuned ML models. The current portfolio version keeps that experimental work separately while using a cleaner production architecture based on OpenAI, Amazon Polly, Firebase, FastAPI, Kivy, and curated local learning datasets.
+The project explores how artificial intelligence, speech technology, cloud services, personalised feedback, and gamification can be combined into an interactive language-learning application.
 
-### OpenAI API availability
+The original academic project included experimentation with locally trained machine-learning models. The current portfolio version preserves that work separately while using a cleaner production architecture built around **Python, Kivy, FastAPI, OpenAI, AWS, Firebase, and curated learning datasets**.
 
-OpenAI-powered features require a user-supplied API key with available API credits.
-If the configured key is invalid, rate-limited, or out of credits, Fluentique keeps
-non-OpenAI features available and displays a user-friendly service message rather
-than crashing. API usage may incur charges.
+---
+
+## Tech Stack
+
+`Python` · `Kivy` · `FastAPI` · `OpenAI` · `AWS` · `Firebase` · `REST APIs` · `Speech Recognition` · `NLP`
