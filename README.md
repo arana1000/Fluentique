@@ -268,6 +268,6 @@ The project originally included experiments with locally trained and fine-tuned 
 ### OpenAI API availability
 
 OpenAI-powered features require a user-supplied API key with available API credits.
-If the key is missing, invalid, rate-limited, or out of credits, Fluentique keeps
+If the configured key is invalid, rate-limited, or out of credits, Fluentique keeps
 non-OpenAI features available and displays a user-friendly service message rather
 than crashing. API usage may incur charges.
